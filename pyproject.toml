@@ -1,6 +1,6 @@
 [project]
 name = "flint-markdown-viewer"
-version = "0.1.0"
+version = "0.1.1"
 description = "Flint: A premium terminal-based Markdown viewer with interactive tables, high-res images, and Obsidian-style callouts."
 readme = "README.md"
 requires-python = ">=3.12"
