@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Development documentation (not for distribution)
+CLAUDE.md
+.claude/
