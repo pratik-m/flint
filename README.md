@@ -1,4 +1,4 @@
-# 🔥 Flint: The Premium Markdown Viewer
+# Flint: The Markdown Viewer in your terminal!
 
 Flint is a premium, terminal-based Markdown viewer built with [Textual](https://textual.textualize.io/). Designed for speed, aesthetics, and a seamless Obsidian-like experience in your terminal.
 
@@ -76,12 +76,6 @@ flint your-file.md
 | `Ctrl+U` / `Ctrl+D` | Scroll Half Page Up / Down                  |
 | `Ctrl+P`            | Open Command Palette (Switch Styles/Themes) |
 
-## 🛠️ Configuration
-
-The app follows XDG standards:
-
-- **Config Directory**: `~/.config/textual-md-viewer/`
-- **Cache Directory**: `~/.cache/textual-md-viewer/` (images and Mermaid diagrams)
 
 ### Styles vs Themes
 
@@ -95,7 +89,7 @@ You can mix and match any theme with any style. Access both via the Command Pale
 
 ## ⚠️ Known Issues
 
-- **Initial Render**: On first launch, you may need to trigger a mouse move or key press for the content to render properly. This is a known Textual framework issue with async rendering.
+- **Initial Render**: On app launch, you may need to trigger a mouse move or key press for the content to render properly. This issue is being looked into.
 - **Style Switching**: Switching between styles may occasionally require reloading the document to fully apply changes.
 
 ## 📝 Changelog
