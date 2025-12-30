@@ -478,8 +478,12 @@ class TextualMarkdownApp(App):
             viewer = self.query_one(CustomMarkdownViewer)
             await viewer.go(self.file_path)
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the application."""
     file_arg = sys.argv[1] if len(sys.argv) > 1 else None
     path = Path(file_arg) if file_arg else None
     app = TextualMarkdownApp(path)
     app.run()
+
+if __name__ == "__main__":
+    main()

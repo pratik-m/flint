@@ -1,0 +1,22 @@
+[project]
+name = "textual-md-viewer"
+version = "0.1.0"
+description = "A terminal-based Markdown viewer with Mermaid diagrams, collapsible sections, and Vim-like navigation"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mermaid-py>=0.8.1",
+    "pillow>=10.4.0",
+    "platformdirs>=4.0.0",
+    "requests>=2.31.0",
+    "term-image>=0.7.2",
+    "textual>=6.11.0",
+    "textual-image[textual]>=0.8.4",
+]
+
+[project.scripts]
+mdview = "app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

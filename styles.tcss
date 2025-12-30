@@ -1,0 +1,55 @@
+/* App UI Styling */
+
+MarkdownViewer:focus {
+    border: none;
+}
+
+.hidden {
+    display: none;
+}
+
+#search-input {
+    dock: bottom;
+    margin: 0 4;
+    background: $panel;
+    border: tall $primary;
+    color: $text;
+}
+
+/* Image alt text styling */
+.image-alt {
+    color: $text-muted;
+    text-style: italic;
+    margin-bottom: 1;
+}
+
+/* Error styling */
+.error {
+    color: $error;
+    background: $error 10%;
+    padding: 1;
+    margin: 1 0;
+}
+
+.collapsed {
+    display: none;
+}
+
+.code-block-container {
+    width: 100%;
+    height: auto;
+    margin: 1 0;
+}
+
+.code-language {
+    color: $text-muted;
+    text-style: italic;
+    width: 100%;
+    text-align: right;
+    padding: 0 1;
+    opacity: 0.6;
+}
+
+#code-content {
+    padding: 0 1;
+}
