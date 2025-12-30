@@ -1,6 +1,7 @@
 # Flint: The Markdown Viewer in your terminal!
 
-Flint is a premium, terminal-based Markdown viewer built with [Textual](https://textual.textualize.io/). Designed for speed, aesthetics, and a seamless Obsidian-like experience in your terminal.
+Flint is a terminal-based Markdown viewer built with [Textual](https://textual.textualize.io/). Inspired by [Frogmouth](https://github.com/Textualize/frogmouth), it adds support for Mermaid rendering, image rendering and tables displayed as native Textual data tables for an improved viewing experience.
+
 
 ## 📸 Screenshots
 
