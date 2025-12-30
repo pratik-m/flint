@@ -190,6 +190,7 @@ class TextualMarkdownApp(App):
         self.history: list[Path] = []
         self.forward_stack: list[Path] = []
         self._loaded_styles: set[str] = {"obsidian"}  # Track loaded styles
+        self._highlighted_blocks: set[Widget] = set()  # Track blocks with search highlights
 
     def compose(self) -> ComposeResult:
         from custom_markdown import CustomMarkdownViewer
@@ -225,7 +226,8 @@ class TextualMarkdownApp(App):
 
             # Store content for search
             if self.file_path and self.file_path.exists():
-                self.markdown_content = self.file_path.read_text(encoding="utf-8")
+                import asyncio
+                self.markdown_content = await asyncio.to_thread(self.file_path.read_text, encoding="utf-8")
 
             # Focus the viewer
             viewer.focus()
@@ -309,85 +311,86 @@ class TextualMarkdownApp(App):
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id == "search-input":
-            self.search_query = event.value.lower()
-            self.search_results = []
-            self.current_search_index = -1
-            
-            # Clear previous highlights
-            self.clear_highlights()
-            
-            if self.search_query:
-                from custom_markdown import CustomMarkdownViewer, CustomMarkdown
-                from textual.widgets._markdown import MarkdownBlock
-                
-                try:
-                    viewer = self.query_one(CustomMarkdownViewer)
-                    markdown = viewer.query_one(CustomMarkdown)
-                except Exception:
-                    return
-
-                # Find all matching blocks in a single pass
-                lines = self.markdown_content.splitlines()
-                matching_line_indices = {i for i, line in enumerate(lines) if self.search_query in line.lower()}
-                
-                blocks = list(markdown.walk_children(MarkdownBlock))
-                
-                for block in blocks:
-                    found = False
-                    # Check source range
-                    if block.source_range:
-                        start, end = block.source_range
-                        for line_idx in range(start, end):
-                            if line_idx in matching_line_indices:
-                                found = True
-                                break
-                    
-                    # Fallback: search rendered text
-                    if not found and hasattr(block, "_content"):
-                        if self.search_query in block._content.plain.lower():
-                            found = True
-                    
-                    if found:
-                        self.search_results.append(block)
-
-                if self.search_results:
-                    self.apply_highlights()
-                    self.current_search_index = 0
-                    self.jump_to_match()
-                else:
-                    self.notify(f"No matches found for '{self.search_query}'", severity="warning")
+            query = event.value.lower()
+            if query:
+                self.perform_search(query)
+            else:
+                self.clear_highlights()
+                self.search_results = []
+                self.current_search_index = -1
             
             self.action_hide_search()
 
-    def clear_highlights(self) -> None:
+    @work(exclusive=True)
+    async def perform_search(self, query: str) -> None:
+        """Perform search in a background worker."""
+        self.search_query = query
+        self.search_results = []
+        self.current_search_index = -1
+        
+        # Clear previous highlights
+        self.clear_highlights()
+        
+        if not self.search_query:
+            return
+
+        from custom_markdown import CustomMarkdownViewer, CustomMarkdown
+        from textual.widgets._markdown import MarkdownBlock
+        
         try:
-            from custom_markdown import CustomMarkdownViewer, CustomMarkdown
             viewer = self.query_one(CustomMarkdownViewer)
             markdown = viewer.query_one(CustomMarkdown)
         except Exception:
             return
+
+        # Find all matching blocks in a single pass
+        lines = self.markdown_content.splitlines()
+        matching_line_indices = {i for i, line in enumerate(lines) if self.search_query in line.lower()}
+        
+        blocks = list(markdown.walk_children(MarkdownBlock))
+        
+        for block in blocks:
+            found = False
+            # Check source range
+            if block.source_range:
+                start, end = block.source_range
+                for line_idx in range(start, end):
+                    if line_idx in matching_line_indices:
+                        found = True
+                        break
             
-        from textual.widgets._markdown import MarkdownBlock
-        for block in markdown.walk_children(MarkdownBlock):
-            if hasattr(block, "_content"):
-                # Reset content to remove styles
-                block._content.stylize_before(0, len(block._content), "")
-                block.update(block._content)
+            # Fallback: search rendered text
+            if not found and hasattr(block, "_content"):
+                if self.search_query in block._content.plain.lower():
+                    found = True
+            
+            if found:
+                self.search_results.append(block)
+
+        if self.search_results:
+            self.apply_highlights()
+            self.current_search_index = 0
+            self.jump_to_match()
+        else:
+            self.notify(f"No matches found for '{self.search_query}'", severity="warning")
+
+    def clear_highlights(self) -> None:
+        """Clear all search highlights efficiently."""
+        while self._highlighted_blocks:
+            block = self._highlighted_blocks.pop()
+            try:
+                if hasattr(block, "_content"):
+                    # Reset content to remove styles
+                    block._content.stylize_before(0, len(block._content), "")
+                    block.update(block._content)
+            except Exception:
+                pass
 
     def apply_highlights(self) -> None:
         if not self.search_query:
             return
             
-        try:
-            from custom_markdown import CustomMarkdownViewer, CustomMarkdown
-            viewer = self.query_one(CustomMarkdownViewer)
-            markdown = viewer.query_one(CustomMarkdown)
-        except Exception:
-            return
-            
-        from textual.widgets._markdown import MarkdownBlock
-        
-        for block in markdown.walk_children(MarkdownBlock):
+        for block in self.search_results:
             if hasattr(block, "_content"):
                 plain = block._content.plain.lower()
                 start = 0
@@ -403,6 +406,7 @@ class TextualMarkdownApp(App):
                 
                 if highlighted:
                     block.update(block._content)
+                    self._highlighted_blocks.add(block)
 
     def jump_to_match(self) -> None:
         if 0 <= self.current_search_index < len(self.search_results):
@@ -511,7 +515,8 @@ class TextualMarkdownApp(App):
             # Use async load pattern
             await viewer.document.load(self.file_path)
             # Store content for search
-            self.markdown_content = self.file_path.read_text(encoding="utf-8")
+            import asyncio
+            self.markdown_content = await asyncio.to_thread(self.file_path.read_text, encoding="utf-8")
             viewer.scroll_home(animate=False)
 
 def main():

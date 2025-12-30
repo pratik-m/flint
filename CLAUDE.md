@@ -350,6 +350,18 @@ Access via Ctrl+P:
   - Created `InteractiveTable` widget inheriting from `MarkdownTable`.
   - Registered `InteractiveTable` for `table_open` blocks.
   - Implemented robust data extraction using internal `_blocks` structure and `_get_headers_and_rows`.
-  - Mounted `DataTable` in `on_mount` to ensure proper initialization.
-  - Added CSS to hide standard table elements and show only the `DataTable`.
-- **Result**: Tables are now scrollable and interactive.
+  - Added custom TCSS for all themes to style headers, cursors, and zebra stripes.
+- **Result**: Tables are now scrollable, interactive, and theme-consistent.
+
+### 5. Obsidian-Style Callouts
+- **Feature**: Added support for `> [!TYPE]` and `> **Type**` callouts.
+- **Implementation**:
+  - Added `_preprocess_markdown` in `CustomMarkdown` to detect callout patterns.
+  - Automatically adds icons (ℹ️, ⚠️, etc.) and styles callout headers.
+  - Updated all TCSS files with theme-specific blockquote/callout styling.
+
+### 6. Performance Micro-Optimizations
+- **Async Search**: Moved search logic to a `@work` background worker in `app.py`.
+- **Highlight Tracking**: Implemented `_highlighted_blocks` set to clear search highlights near-instantly.
+- **Regex Pre-compilation**: Pre-compiled all image and callout regex patterns at the module level.
+- **Async File Reading**: Used `asyncio.to_thread` for file reading in search and document loading.

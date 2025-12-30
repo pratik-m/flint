@@ -43,9 +43,9 @@
 .style-obsidian MarkdownBlockQuote {
     border-left: wide $accent;
     background: $accent 8%;
-    padding: 0 2;
+    padding: 1 2;
     margin: 1 0;
-    color: $text 80%;
+    color: $text 90%;
 }
 
 /* Code blocks - Subtle background */
@@ -113,5 +113,28 @@ InteractiveTable MarkdownTD {
 
 InteractiveTable DataTable {
     height: auto;
-    max-height: 20;
+    max-height: 25;
+    border: tall $primary 50%;
+    background: $surface;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: $primary 20%;
+    color: $primary;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: $primary 30%;
+    color: $text;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: $primary 10%;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: $panel 30%;
 }

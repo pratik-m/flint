@@ -50,7 +50,7 @@
     border-left: wide $success;
     border-right: tall $success;
     background: $success 5%;
-    padding: 0 2;
+    padding: 1 2;
     margin: 1 0;
     color: $text;
 }
@@ -113,4 +113,41 @@
 
 .style-cyberpunk MarkdownTD {
     border: solid $success 30%;
+}
+
+/* Hide standard table elements inside InteractiveTable */
+InteractiveTable MarkdownThead,
+InteractiveTable MarkdownTbody,
+InteractiveTable MarkdownTR,
+InteractiveTable MarkdownTH,
+InteractiveTable MarkdownTD {
+    display: none;
+}
+
+InteractiveTable DataTable {
+    height: auto;
+    max-height: 25;
+    border: heavy $success;
+    background: $surface;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: $success 20%;
+    color: $success;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: $warning;
+    color: $surface;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: $warning 10%;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: $panel 40%;
 }

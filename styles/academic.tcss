@@ -107,3 +107,40 @@
 .style-academic MarkdownTR:even {
     background: $panel 20%;
 }
+
+/* Hide standard table elements inside InteractiveTable */
+InteractiveTable MarkdownThead,
+InteractiveTable MarkdownTbody,
+InteractiveTable MarkdownTR,
+InteractiveTable MarkdownTH,
+InteractiveTable MarkdownTD {
+    display: none;
+}
+
+InteractiveTable DataTable {
+    height: auto;
+    max-height: 25;
+    border: solid $text 40%;
+    background: $surface;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: $panel 80%;
+    color: $text;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: $primary 15%;
+    color: $text;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: $panel 40%;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: $panel 20%;
+}

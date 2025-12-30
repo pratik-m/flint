@@ -19,6 +19,7 @@ from textual.widgets._markdown import (
     MarkdownHeader,
     MarkdownTableOfContents,
     MarkdownTable,
+    MarkdownBlockQuote,
     slug_for_tcss_id
 )
 from textual.content import Content
@@ -29,6 +30,11 @@ from textual_image.widget import TGPImage
 
 # Pre-compiled regex for header cleanup
 _HEADER_CLEANUP_RE = re.compile(r"^[▼▶]\s*|\s*[#=\-]+$|^\n+")
+
+# Pre-compiled regex for image and callout preprocessing
+_IMG_PATTERN = re.compile(r'!\[([^\]]*)\]\(([^\)]+)\)')
+_CALLOUT_PATTERN = re.compile(r'^>\s*\[!([^\]]+)\](.*)$', re.MULTILINE)
+_BOLD_CALLOUT_PATTERN = re.compile(r'^>\s*\*\*([^*]+)\*\*(.*)$', re.MULTILINE)
 
 class SmartImageFence(MarkdownFence):
     """A Markdown fence that renders images asynchronously."""
@@ -558,9 +564,9 @@ class CustomMarkdown(Markdown):
         parser_factory: Callable[[], any] | None = None,
         open_links: bool = True,
     ):
-        # Pre-process markdown to convert images to fence blocks
+        # Pre-process markdown to convert images to fence blocks and handle callouts
         if markdown:
-            markdown = self._preprocess_images(markdown)
+            markdown = self._preprocess_markdown(markdown)
 
         super().__init__(markdown, name=name, id=id, classes=classes, parser_factory=parser_factory, open_links=open_links)
         self.BLOCKS = self.BLOCKS.copy()
@@ -570,25 +576,66 @@ class CustomMarkdown(Markdown):
         self.current_style = "obsidian"
 
     @staticmethod
-    def _preprocess_images(markdown: str) -> str:
-        """Convert ![alt](url) to ~~~image fence blocks."""
-        import re
-        pattern = r'!\[([^\]]*)\]\(([^\)]+)\)'
-
+    def _preprocess_markdown(markdown: str) -> str:
+        """Preprocess markdown for images and callouts."""
+        # 1. Images: Convert ![alt](url) to ~~~image fence blocks
         def replace_image(match):
             alt = match.group(1)
             url = match.group(2)
             return f"~~~image\n{url}\n{alt}\n~~~"
+        markdown = _IMG_PATTERN.sub(replace_image, markdown)
 
-        return re.sub(pattern, replace_image, markdown)
+        # 2. Callouts: Convert > [!TYPE] Title or > **TYPE** to styled header
+        def replace_callout(match):
+            ctype = match.group(1).upper()
+            title = match.group(2).strip()
+            
+            # Map types to icons
+            icons = {
+                "INFO": "ℹ️",
+                "WARNING": "⚠️",
+                "ERROR": "🚫",
+                "TIP": "💡",
+                "NOTE": "📝",
+                "IMPORTANT": "❗",
+                "CAUTION": "🔥",
+                "SUCCESS": "✅",
+                "QUESTION": "❓",
+                "ABSTRACT": "📋",
+                "TODO": "☑️",
+                "FAILURE": "❌",
+                "DANGER": "⚡",
+                "BUG": "🐛",
+                "EXAMPLE": "🧪",
+                "QUOTE": "💬"
+            }
+            icon = icons.get(ctype, "📝")
+            
+            # Create a bold header with icon
+            header = f"**{icon} {ctype}**"
+            if title:
+                header += f" {title}"
+            
+            # Return the header and an empty blockquote line to separate from content
+            return f"> {header}\n> "
+            
+        markdown = _CALLOUT_PATTERN.sub(replace_callout, markdown)
+        markdown = _BOLD_CALLOUT_PATTERN.sub(replace_callout, markdown)
+        
+        return markdown
+
+    @staticmethod
+    def _preprocess_images(markdown: str) -> str:
+        """Legacy method, now uses _preprocess_markdown."""
+        return CustomMarkdown._preprocess_markdown(markdown)
 
     async def load(self, path: Path) -> None:
-        """Override load to preprocess images."""
+        """Override load to preprocess markdown."""
         import asyncio
         # Read file in thread to avoid blocking
         content = await asyncio.to_thread(path.read_text, encoding="utf-8")
-        # Preprocess images before passing to parent load
-        content = self._preprocess_images(content)
+        # Preprocess markdown before passing to parent load
+        content = self._preprocess_markdown(content)
         # Update document with preprocessed content
         await self.update(content)
 

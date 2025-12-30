@@ -45,7 +45,7 @@
 .style-blueprint MarkdownBlockQuote {
     border-left: double #2aa198;
     background: #073642;
-    padding: 0 2;
+    padding: 1 2;
     margin: 1 0;
     color: #93a1a1;
 }
@@ -109,4 +109,42 @@
 
 .style-blueprint MarkdownTD {
     border: solid #586e75;
+}
+
+/* Hide standard table elements inside InteractiveTable */
+InteractiveTable MarkdownThead,
+InteractiveTable MarkdownTbody,
+InteractiveTable MarkdownTR,
+InteractiveTable MarkdownTH,
+InteractiveTable MarkdownTD {
+    display: none;
+}
+
+InteractiveTable DataTable {
+    height: auto;
+    max-height: 25;
+    border: solid #586e75;
+    background: #002b36;
+    color: #839496;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: #073642;
+    color: #2aa198;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: #268bd2;
+    color: #ffffff;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: #073642;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: #073642 50%;
 }

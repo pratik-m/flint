@@ -39,7 +39,7 @@
 /* Blockquotes - Minimal border */
 .style-minimal MarkdownBlockQuote {
     border-left: solid $text 30%;
-    padding: 0 2;
+    padding: 1 2;
     margin: 1 0;
     color: $text 70%;
     text-style: italic;
@@ -84,4 +84,41 @@
 .style-minimal MarkdownTH {
     text-style: bold;
     border-bottom: solid $text 20%;
+}
+
+/* Hide standard table elements inside InteractiveTable */
+InteractiveTable MarkdownThead,
+InteractiveTable MarkdownTbody,
+InteractiveTable MarkdownTR,
+InteractiveTable MarkdownTH,
+InteractiveTable MarkdownTD {
+    display: none;
+}
+
+InteractiveTable DataTable {
+    height: auto;
+    max-height: 25;
+    border: solid $text 10%;
+    background: $surface;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: $text 5%;
+    color: $text;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: $text 10%;
+    color: $text;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: $text 3%;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: $panel 10%;
 }

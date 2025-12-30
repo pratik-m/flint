@@ -41,7 +41,7 @@
 .style-retro MarkdownBlockQuote {
     border-left: heavy #00ff00;
     background: #001100;
-    padding: 0 2;
+    padding: 1 2;
     margin: 1 0;
     color: #00dd00;
 }
@@ -106,4 +106,42 @@
 
 .style-retro MarkdownTD {
     border: solid #005500;
+}
+
+/* Hide standard table elements inside InteractiveTable */
+InteractiveTable MarkdownThead,
+InteractiveTable MarkdownTbody,
+InteractiveTable MarkdownTR,
+InteractiveTable MarkdownTH,
+InteractiveTable MarkdownTD {
+    display: none;
+}
+
+InteractiveTable DataTable {
+    height: auto;
+    max-height: 25;
+    border: heavy #00ff00;
+    background: #000000;
+    color: #00ff00;
+    margin: 1 0;
+}
+
+InteractiveTable DataTable > .datatable--header {
+    background: #003300;
+    color: #00ff00;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--cursor {
+    background: #00ff00;
+    color: #000000;
+    text-style: bold;
+}
+
+InteractiveTable DataTable > .datatable--hover {
+    background: #002200;
+}
+
+InteractiveTable DataTable > .datatable--zebra-even {
+    background: #001100;
 }
