@@ -318,16 +318,16 @@ class SmartMarkdownFence(MarkdownFence):
     def display_image(self, image_path: str) -> None:
         """Display loaded image."""
         try:
-            from textual_image.widget import Image as ImageWidget
-
             # Remove loading indicator
             try:
                 self.query_one("#loading-image").remove()
             except:
                 pass
 
-            # Create image widget
-            img = ImageWidget(str(image_path))
+            # Create image widget using TGP rendering with unique ID
+            import os
+            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
             img.styles.height = "auto"
             img.styles.margin = (0, 0, 2, 0)
@@ -336,11 +336,11 @@ class SmartMarkdownFence(MarkdownFence):
             container = self.query_one("#image-block", Vertical)
             container.mount(img)
 
-            # Force refresh
+            # Force refresh for instant display
             container.refresh(layout=True)
             self.refresh(layout=True)
 
-            self.app.log(f"✓ Image displayed")
+            self.app.log(f"✓ Image displayed (TGP)")
 
         except Exception as e:
             self.app.log(f"✗ Error displaying image: {e}")

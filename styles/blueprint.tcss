@@ -1,0 +1,112 @@
+/* Blueprint Style - Technical, architectural, precise */
+
+.style-blueprint Markdown {
+    padding: 1 4;
+    background: #002b36;  /* Deep blue */
+    color: #839496;       /* Light grey/cyan */
+}
+
+/* Headers - Technical look with dashed borders */
+.style-blueprint MarkdownH1 {
+    color: #2aa198;       /* Cyan */
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 1 2;
+    border: dashed #2aa198;
+    background: #073642;
+    width: 100%;
+}
+
+.style-blueprint MarkdownH2 {
+    color: #268bd2;       /* Blue */
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 0 2;
+    border-bottom: dashed #268bd2;
+}
+
+.style-blueprint MarkdownH3 {
+    color: #859900;       /* Green */
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: dashed #859900;
+    padding-left: 1;
+}
+
+.style-blueprint MarkdownH4,
+.style-blueprint MarkdownH5,
+.style-blueprint MarkdownH6 {
+    color: #b58900;       /* Yellow */
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+/* Blockquotes - Technical notes */
+.style-blueprint MarkdownBlockQuote {
+    border-left: double #2aa198;
+    background: #073642;
+    padding: 0 2;
+    margin: 1 0;
+    color: #93a1a1;
+}
+
+/* Code blocks - Grid paper feel */
+.style-blueprint MarkdownFence {
+    background: #073642;
+    border: solid #586e75;
+    padding: 1 2;
+    margin: 1 0;
+    color: #839496;
+}
+
+/* Inline code */
+.style-blueprint MarkdownInlineCode {
+    background: #073642;
+    color: #cb4b16;       /* Orange */
+    text-style: bold;
+}
+
+/* Lists */
+.style-blueprint MarkdownBulletList,
+.style-blueprint MarkdownOrderedList {
+    margin: 1 0;
+    padding: 0 2;
+}
+
+/* Horizontal rules - Dashed line */
+.style-blueprint MarkdownHorizontalRule {
+    color: #586e75;
+    margin: 2 0;
+    border-top: dashed #586e75;
+}
+
+/* Links */
+.style-blueprint MarkdownLink {
+    color: #268bd2;
+    text-style: underline;
+}
+
+/* Tables - Technical grid */
+.style-blueprint MarkdownTable {
+    margin: 1 0;
+    border: solid #586e75;
+}
+
+.style-blueprint MarkdownTH {
+    background: #073642;
+    text-style: bold;
+    color: #2aa198;
+    border-bottom: solid #586e75;
+}
+
+.style-blueprint MarkdownTR {
+    background: #002b36;
+}
+
+.style-blueprint MarkdownTR:hover {
+    background: #073642;
+}
+
+.style-blueprint MarkdownTD {
+    border: solid #586e75;
+}

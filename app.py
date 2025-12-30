@@ -65,6 +65,8 @@ class StyleProvider(Provider):
             "Minimal": "minimal",
             "Academic": "academic",
             "Cyberpunk": "cyberpunk",
+            "Blueprint": "blueprint",
+            "Retro": "retro",
             "ASCII": "ascii",
         }
         return [
@@ -493,6 +495,13 @@ class TextualMarkdownApp(App):
             next_path = self.forward_stack.pop()
             self.file_path = next_path
             await self.reload_content()
+
+    def action_quit(self) -> None:
+        """Quit the application immediately."""
+        # Cancel all background workers to prevent hanging
+        self.workers.cancel_all()
+        # Force exit
+        self.exit()
 
     async def reload_content(self) -> None:
         """Reload content using async pattern."""
