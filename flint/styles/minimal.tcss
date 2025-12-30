@@ -10,7 +10,7 @@
     color: $text;
     text-style: bold;
     margin: 3 0 1 0;
-    border-bottom: solid $text 20%;
+    border-bottom: solid $primary;
     padding-bottom: 1;
 }
 
@@ -18,7 +18,7 @@
     color: $text;
     text-style: bold;
     margin: 2 0 1 0;
-    border-bottom: solid $text 10%;
+    border-bottom: solid $primary-darken-2;
     padding-bottom: 1;
 }
 
@@ -38,7 +38,7 @@
 
 /* Blockquotes - Minimal border */
 .style-minimal MarkdownBlockQuote {
-    border-left: solid $text 30%;
+    border-left: solid $primary;
     padding: 1 2;
     margin: 1 0;
     color: $text 70%;
@@ -83,7 +83,7 @@
 
 .style-minimal MarkdownTH {
     text-style: bold;
-    border-bottom: solid $text 20%;
+    border-bottom: solid $primary;
 }
 
 /* Hide standard table elements inside InteractiveTable */
@@ -98,27 +98,27 @@ InteractiveTable MarkdownTD {
 InteractiveTable DataTable {
     height: auto;
     max-height: 25;
-    border: solid $text 10%;
+    border: solid $primary;
     background: $surface;
     margin: 1 0;
 }
 
 InteractiveTable DataTable > .datatable--header {
-    background: $text 5%;
+    background: $panel;
     color: $text;
     text-style: bold;
 }
 
 InteractiveTable DataTable > .datatable--cursor {
-    background: $text 10%;
+    background: $primary-darken-2;
     color: $text;
     text-style: bold;
 }
 
 InteractiveTable DataTable > .datatable--hover {
-    background: $text 3%;
+    background: $panel;
 }
 
 InteractiveTable DataTable > .datatable--zebra-even {
-    background: $panel 10%;
+    background: $panel;
 }

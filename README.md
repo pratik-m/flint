@@ -8,10 +8,8 @@ Flint is a premium, terminal-based Markdown viewer built with [Textual](https://
 - **🖼️ High-Res Images**: Crystal clear image rendering using the Terminal Graphics Protocol (TGP).
 - **🧜 Mermaid Diagrams**: Full support for Mermaid diagrams (flowcharts, sequence diagrams, etc.) rendered directly in the terminal.
 - **📝 Obsidian-Style Callouts**: Support for `> [!INFO]` and `> **Type**` callouts with automatic icons and distinct styling.
-- **📂 Collapsible Headers**: Click on any header to collapse or expand the section beneath it.
-- **🔍 Fast Async Search**: Search through large documents with background processing and instant highlight clearing.
-- **🎨 Visual Styles**: Multiple built-in themes including **Obsidian**, **Cyberpunk**, **Retro**, **Blueprint**, and **Minimal**.
-- **⌨️ Vim-like Navigation**: Navigate with `j/k`, `gg/G`, `Ctrl+U/D`, and maintain history with `Ctrl+O/I`.
+- **🎨 Visual Styles & Themes**: Multiple built-in styles (**Obsidian**, **Cyberpunk**, **Retro**, **Blueprint**, **Minimal**) and color themes (**Gruvbox**, **Nord**, **Dracula**, etc.).
+- **⌨️ Vim-like Navigation**: Navigate with `j/k`, `gg/G`, `Ctrl+U/D` for smooth scrolling.
 
 ## 🚀 Installation
 
@@ -43,19 +41,35 @@ flint your-file.md
 | Key | Action |
 | --- | --- |
 | `q` | Quit |
-| `t` | Toggle Sidebar (Table of Contents) |
-| `/` | Search |
-| `n` / `N` | Next / Previous Search Match |
 | `j` / `k` | Scroll Down / Up |
 | `g` / `G` | Scroll to Top / Bottom |
+| `Ctrl+U` / `Ctrl+D` | Scroll Half Page Up / Down |
 | `Ctrl+P` | Open Command Palette (Switch Styles/Themes) |
-| `Ctrl+O` / `Ctrl+I` | Back / Forward in History |
 
 ## 🛠️ Configuration
 
 The app follows XDG standards:
-- **Themes**: Place your custom `.tcss` files in `~/.config/textual-md-viewer/themes/`.
-- **Cache**: Images and diagrams are cached in `~/.cache/textual-md-viewer/`.
+- **Config Directory**: `~/.config/textual-md-viewer/`
+- **Cache Directory**: `~/.cache/textual-md-viewer/` (images and Mermaid diagrams)
+
+### Styles vs Themes
+
+Flint has a two-layer visual customization system:
+
+**Themes** (Color Schemes): Control the color palette of the app. Examples: `gruvbox`, `nord`, `dracula`, `catppuccin`. These are built into Textual and affect the overall color scheme across the entire interface.
+
+**Styles** (Layout & Formatting): Control the visual layout, spacing, borders, typography, and overall aesthetic. Examples: `Obsidian`, `Minimal`, `Blueprint`, `Retro`, `Cyberpunk`. These are custom TCSS files in `flint/styles/` that define how Markdown elements are displayed.
+
+You can mix and match any theme with any style. Access both via the Command Palette (`Ctrl+P`).
+
+## ⚠️ Known Issues
+
+- **Initial Render**: On first launch, you may need to trigger a mouse move or key press for the content to render properly. This is a known Textual framework issue with async rendering.
+- **Style Switching**: Switching between styles may occasionally require reloading the document to fully apply changes.
+
+## 📝 Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
 
 ## 🤝 Contributing
 

@@ -11,7 +11,7 @@
     text-style: bold;
     margin: 4 0 2 0;
     text-align: center;
-    border-bottom: double $text 30%;
+    border-bottom: double $primary;
     padding-bottom: 1;
 }
 
@@ -19,7 +19,7 @@
     color: $text;
     text-style: bold;
     margin: 3 0 1 0;
-    border-bottom: solid $text 20%;
+    border-bottom: solid $primary;
     padding-bottom: 1;
 }
 
@@ -44,18 +44,18 @@
 
 /* Blockquotes - Academic citation style */
 .style-academic MarkdownBlockQuote {
-    border-left: wide $text 40%;
+    border-left: wide $primary;
     padding: 1 3;
     margin: 2 4;
     color: $text 80%;
     text-style: italic;
-    background: $panel 30%;
+    background: $panel;
 }
 
 /* Code blocks - Academic listing style */
 .style-academic MarkdownFence {
     background: $panel;
-    border: solid $text 20%;
+    border: solid $primary;
     padding: 2 3;
     margin: 2 0;
 }
@@ -89,14 +89,14 @@
 /* Tables - Academic data presentation */
 .style-academic MarkdownTable {
     margin: 2 0;
-    border: solid $text 30%;
+    border: solid $primary;
 }
 
 .style-academic MarkdownTH {
-    background: $panel 50%;
+    background: $panel;
     text-style: bold;
     color: $text;
-    border-bottom: double $text 40%;
+    border-bottom: double $primary;
     padding: 1;
 }
 
@@ -105,7 +105,7 @@
 }
 
 .style-academic MarkdownTR:even {
-    background: $panel 20%;
+    background: $panel;
 }
 
 /* Hide standard table elements inside InteractiveTable */
@@ -120,27 +120,27 @@ InteractiveTable MarkdownTD {
 InteractiveTable DataTable {
     height: auto;
     max-height: 25;
-    border: solid $text 40%;
+    border: solid $primary;
     background: $surface;
     margin: 1 0;
 }
 
 InteractiveTable DataTable > .datatable--header {
-    background: $panel 80%;
+    background: $panel;
     color: $text;
     text-style: bold;
 }
 
 InteractiveTable DataTable > .datatable--cursor {
-    background: $primary 15%;
+    background: $primary-darken-2;
     color: $text;
     text-style: bold;
 }
 
 InteractiveTable DataTable > .datatable--hover {
-    background: $panel 40%;
+    background: $panel;
 }
 
 InteractiveTable DataTable > .datatable--zebra-even {
-    background: $panel 20%;
+    background: $panel;
 }

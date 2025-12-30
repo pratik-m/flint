@@ -54,7 +54,7 @@ class SmartImageFence(MarkdownFence):
     def render_image(self) -> None:
         """Render images from local files or remote URLs."""
         try:
-            from config import CACHE_DIR
+            from .config import CACHE_DIR
             from PIL import Image as PILImage
             from pathlib import Path
             import io
@@ -243,7 +243,7 @@ class SmartMarkdownFence(MarkdownFence):
     def render_image(self) -> None:
         """Render images from local files or remote URLs."""
         try:
-            from config import CACHE_DIR
+            from .config import CACHE_DIR
             from PIL import Image as PILImage
             from pathlib import Path
             import io
@@ -398,7 +398,7 @@ class SmartMarkdownFence(MarkdownFence):
     @work(thread=True)
     def render_mermaid(self) -> None:
         try:
-            from config import CACHE_DIR
+            from .config import CACHE_DIR
             import requests
             import time
 

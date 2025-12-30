@@ -27,13 +27,13 @@ dependencies = [
 ]
 
 [project.scripts]
-flint = "app:main"
+flint = "flint:main"
 
 [tool.setuptools]
-py-modules = ["app", "custom_markdown", "config"]
+packages = ["flint"]
 
 [tool.setuptools.package-data]
-"*" = ["styles/*.tcss"]
+flint = ["styles/*.tcss", "styles.tcss"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
