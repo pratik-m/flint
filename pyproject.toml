@@ -9,11 +9,6 @@ authors = [
     { name = "Pratik Munot <munotpratik2009@gmail.com>" }
 ]
 keywords = ["markdown", "tui", "textual", "viewer", "mermaid", "obsidian", "flint"]
-
-[project.urls]
-Homepage = "https://github.com/pratik-m/flint"
-Repository = "https://github.com/pratik-m/flint"
-Issues = "https://github.com/pratik-m/flint/issues"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -30,6 +25,11 @@ dependencies = [
     "textual>=0.86.0",
     "textual-image[textual]>=0.8.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pratik-m/flint"
+Repository = "https://github.com/pratik-m/flint"
+Issues = "https://github.com/pratik-m/flint/issues"
 
 [project.scripts]
 flint = "flint:main"
