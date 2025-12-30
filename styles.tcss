@@ -62,3 +62,10 @@ MarkdownViewer:focus {
     padding: 1;
     color: $accent;
 }
+
+/* Mermaid block container */
+#mermaid-block {
+    width: 100%;
+    height: auto;
+    margin: 1 0;
+}

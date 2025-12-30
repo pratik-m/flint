@@ -31,17 +31,17 @@ class SmartMarkdownFence(MarkdownFence):
 
     def compose(self) -> ComposeResult:
         lexer = self.lexer.strip().lower() if self.lexer else ""
-        
+
         # Optimization: Avoid extra container if not mermaid
         if lexer == "mermaid":
-            with Vertical(classes="code-block-container"):
+            with Vertical(classes="code-block-container", id="mermaid-block"):
                 yield Label(lexer, classes="code-language")
                 yield LoadingIndicator(id="loading-mermaid")
                 yield Label(self._highlighted_code, id="code-content", classes="hidden")
             try:
                 self.render_mermaid()
             except Exception:
-                pass 
+                pass
         elif lexer:
             # For normal code with lexer, we need the label
             with Vertical(classes="code-block-container"):
@@ -78,10 +78,10 @@ class SmartMarkdownFence(MarkdownFence):
 
             self.app.log(f"→ Mermaid cache MISS: {cache_key[:8]}, fetching...")
 
-            # Use moderate quality settings
-            # scale=2 for good quality without massive file sizes
+            # Use smaller width for better terminal rendering quality
+            # width=800 is smaller but may render better at terminal resolution
             encoded_direct = base64.urlsafe_b64encode(script.encode('utf-8')).decode('ascii')
-            url_direct = f"https://mermaid.ink/img/{encoded_direct}?bgColor=transparent&scale=2"
+            url_direct = f"https://mermaid.ink/img/{encoded_direct}?bgColor=transparent&width=800"
 
             if not self.app.is_running: return
 
@@ -128,43 +128,40 @@ class SmartMarkdownFence(MarkdownFence):
             from textual_image.widget import Image as ImageWidget
             from PIL import Image as PILImage
 
-            # Remove loading indicator
-            try:
-                self.query_one("#loading-mermaid").remove()
-            except Exception:
-                pass
-
             # Get actual image dimensions
             with PILImage.open(image_path) as pil_img:
                 img_width, img_height = pil_img.size
 
             # Get terminal dimensions
             terminal_height = self.app.size.height if hasattr(self.app, 'size') else 60
-            terminal_width = self.app.size.width if hasattr(self.app, 'size') else 120
-
-            # Calculate max height
-            max_diagram_height = max(30, int(terminal_height * 0.6))
 
             self.app.log(f"  Image: {img_width}x{img_height}px")
-            self.app.log(f"  Terminal: {terminal_width}x{terminal_height} cells")
-            self.app.log(f"  Max height: {max_diagram_height} cells")
 
-            # Create and mount image widget
-            img = ImageWidget(image_path)
-
-            # Set reasonable constraints based on terminal size
+            # Create image widget WITHOUT max_height to see if that improves quality
+            img = ImageWidget(str(image_path))
             img.styles.width = "auto"
             img.styles.height = "auto"
-            img.styles.max_height = max_diagram_height
-            img.styles.margin = (1, 0)
+            # NO max_height - let it render at full quality
+            img.styles.margin = (0, 0, 2, 0)
 
-            self.mount(img)
+            # Remove loading indicator and code-content
+            try:
+                self.query_one("#loading-mermaid").remove()
+            except:
+                pass
+            try:
+                self.query_one("#code-content").remove()
+            except:
+                pass
 
-            status = "from cache (instant)" if from_cache else "newly fetched"
-            self.app.log(f"✓ Mermaid displayed {status}")
+            # Mount into container
+            container = self.query_one("#mermaid-block", Vertical)
+            container.mount(img)
+
+            self.app.log(f"✓ Mermaid displayed {img_width}x{img_height}px")
 
         except Exception as e:
-            self.app.log(f"✗ Error mounting mermaid image: {e}")
+            self.app.log(f"✗ Error: {e}")
             import traceback
             self.app.log(traceback.format_exc())
             self.show_error(str(e))
