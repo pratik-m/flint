@@ -253,8 +253,22 @@ class TextualMarkdownApp(App):
 
     def action_clear_cache(self) -> None:
         """Remove all cached images and diagrams."""
-        # Disabled for now
-        self.notify("Cache clear disabled")
+        from config import CACHE_DIR
+        import shutil
+
+        try:
+            if CACHE_DIR.exists():
+                # Remove all files in cache directory
+                for item in CACHE_DIR.iterdir():
+                    if item.is_file():
+                        item.unlink()
+                    elif item.is_dir():
+                        shutil.rmtree(item)
+                self.notify("Cache cleared successfully")
+            else:
+                self.notify("Cache directory is empty")
+        except Exception as e:
+            self.notify(f"Failed to clear cache: {e}", severity="error")
 
     def action_search(self) -> None:
         search_input = self.query_one("#search-input", Input)
