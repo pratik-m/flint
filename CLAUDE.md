@@ -325,3 +325,31 @@ Access via Ctrl+P:
 - When fixing issues, **commit changes as you go** - don't wait until all fixes are done
 - since this is a textual app, do not run it directly as it will overflwo the context window. ask the suer to run it.
 - going gorward any new feature will be tested on a new brnach![32;2u
+## Recent Updates (2025-12-29)
+
+### 1. High-Resolution Image Rendering
+- **Problem**: Images were rendered pixelated due to character-based rendering.
+- **Fix**: Switched to `TGPImage` (Terminal Graphics Protocol) in `custom_markdown.py`.
+- **Result**: Images now render in high resolution on supported terminals.
+
+### 2. New Visual Styles
+- **Feature**: Added "Blueprint" and "Retro" visual styles.
+- **Implementation**:
+  - Created `styles/blueprint.tcss` (Technical/Architectural look).
+  - Created `styles/retro.tcss` (CRT/Phosphor look).
+  - Registered styles in `app.py`.
+
+### 3. Application Quit Optimization
+- **Problem**: Slow quit time (1-2s delay).
+- **Fix**: Implemented `action_quit` in `app.py` to explicitly cancel all background workers (`self.workers.cancel_all()`) before exiting.
+- **Result**: Instant application shutdown.
+
+### 4. Interactive Tables
+- **Feature**: Replaced static Markdown tables with interactive `DataTable` widgets.
+- **Implementation**:
+  - Created `InteractiveTable` widget inheriting from `MarkdownTable`.
+  - Registered `InteractiveTable` for `table_open` blocks.
+  - Implemented robust data extraction using internal `_blocks` structure and `_get_headers_and_rows`.
+  - Mounted `DataTable` in `on_mount` to ensure proper initialization.
+  - Added CSS to hide standard table elements and show only the `DataTable`.
+- **Result**: Tables are now scrollable and interactive.

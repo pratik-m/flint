@@ -18,6 +18,7 @@ from textual.widgets._markdown import (
     MarkdownFence,
     MarkdownHeader,
     MarkdownTableOfContents,
+    MarkdownTable,
     slug_for_tcss_id
 )
 from textual.content import Content
@@ -503,6 +504,47 @@ class SmartMarkdownFence(MarkdownFence):
             except:
                 pass
 
+class InteractiveTable(MarkdownTable):
+    """A Markdown table that renders as an interactive DataTable."""
+
+    def compose(self) -> ComposeResult:
+        # Do not yield DataTable here as it might interfere with Markdown parser adding children
+        return []
+
+    def on_mount(self) -> None:
+        """Schedule data extraction after children are mounted."""
+        from textual.widgets import DataTable
+        # Mount DataTable manually
+        self.mount(DataTable())
+        self.call_later(self._extract_table_data)
+
+    def _extract_table_data(self) -> None:
+        """Extract data from _blocks and populate DataTable."""
+        from textual.widgets import DataTable
+
+        try:
+            table = self.query_one(DataTable)
+            table.cursor_type = "row"
+            table.zebra_stripes = True
+            table.clear(columns=True)
+            
+            # Use inherited method to get data from self._blocks
+            # This is populated by the Markdown parser before the widget is mounted
+            headers, rows = self._get_headers_and_rows()
+            
+            # Convert Content objects to plain text
+            plain_headers = [h.plain for h in headers]
+            plain_rows = [[c.plain for c in row] for row in rows]
+            
+            if plain_headers:
+                table.add_columns(*plain_headers)
+            
+            if plain_rows:
+                table.add_rows(plain_rows)
+
+        except Exception:
+            pass
+
 class CustomMarkdown(Markdown):
     """Markdown widget with custom block support."""
 
@@ -523,6 +565,7 @@ class CustomMarkdown(Markdown):
         super().__init__(markdown, name=name, id=id, classes=classes, parser_factory=parser_factory, open_links=open_links)
         self.BLOCKS = self.BLOCKS.copy()
         self.BLOCKS["fence"] = SmartMarkdownFence
+        self.BLOCKS["table_open"] = InteractiveTable
         self._collapsed_headers: set[int] = set()
         self.current_style = "obsidian"
 
