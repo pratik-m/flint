@@ -129,11 +129,18 @@ class CustomMarkdown(Markdown):
 
     def on_mount(self) -> None:
         """Add icons to headers on mount."""
+        # Process headers asynchronously to avoid blocking UI
+        self.add_header_icons()
+
+    @work(exclusive=True)
+    async def add_header_icons(self) -> None:
+        """Add collapse icons to all headers asynchronously."""
         for header in self.query(MarkdownHeader):
             if hasattr(header, "_content"):
                 header._original_text = header._content.plain
                 header._content = Content("▼ " + header._content.plain)
-                header.update(header._content)
+                if header.is_mounted:
+                    header.update(header._content)
 
     def on_click(self, event: events.Click) -> None:
         """Handle clicks on headers to toggle collapse."""
