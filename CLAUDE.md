@@ -324,3 +324,4 @@ Access via Ctrl+P:
 - Mermaid diagrams use mermaid.ink API with base64 encoding
 - When fixing issues, **commit changes as you go** - don't wait until all fixes are done
 - since this is a textual app, do not run it directly as it will overflwo the context window. ask the suer to run it.
+- going gorward any new feature will be tested on a new brnach![32;2u

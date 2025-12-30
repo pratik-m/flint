@@ -55,60 +55,146 @@ class SmartMarkdownFence(MarkdownFence):
     def render_mermaid(self) -> None:
         try:
             from config import CACHE_DIR
+            import requests
+            import time
+
+            start_time = time.time()
+
+            # Ensure cache directory exists
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
             script = self.code.strip()
             cache_key = hashlib.md5(script.encode()).hexdigest()
             cache_path = CACHE_DIR / f"mermaid_{cache_key}.png"
-            
+
+            # Check cache first
             if cache_path.exists():
-                self.app.call_from_thread(self.update_mermaid, str(cache_path))
+                cache_size = cache_path.stat().st_size / 1024  # KB
+                self.app.log(f"→ Mermaid cache HIT: {cache_key[:8]} ({cache_size:.1f}KB)")
+                self.app.call_from_thread(self.update_mermaid, str(cache_path), from_cache=True)
+                elapsed = time.time() - start_time
+                self.app.log(f"  Cache load time: {elapsed:.3f}s")
                 return
 
-            # Safe theme detection
-            is_dark = getattr(self.app, "dark", True)
-            if hasattr(self.app, "theme") and self.app.theme:
-                is_dark = "light" not in self.app.theme.lower()
-            
-            # Method 1: Direct encoding
+            self.app.log(f"→ Mermaid cache MISS: {cache_key[:8]}, fetching...")
+
+            # Use moderate quality settings
+            # scale=2 for good quality without massive file sizes
             encoded_direct = base64.urlsafe_b64encode(script.encode('utf-8')).decode('ascii')
-            url_direct = f"https://mermaid.ink/img/{encoded_direct}?bgColor=transparent"
-            
-            import requests
+            url_direct = f"https://mermaid.ink/img/{encoded_direct}?bgColor=transparent&scale=2"
+
             if not self.app.is_running: return
-            response = requests.get(url_direct, timeout=5)
+
+            fetch_start = time.time()
+            response = requests.get(url_direct, timeout=15)
+            fetch_time = time.time() - fetch_start
+
             if not self.app.is_running: return
-            
+
             if response.status_code == 200:
+                size_kb = len(response.content) / 1024
+                self.app.log(f"  Fetched in {fetch_time:.2f}s ({size_kb:.1f}KB)")
+
+                CACHE_DIR.mkdir(parents=True, exist_ok=True)
                 with open(cache_path, "wb") as f:
                     f.write(response.content)
-                self.app.call_from_thread(self.update_mermaid, str(cache_path))
+
+                self.app.log(f"  Cached to: {cache_path.name}")
+                self.app.call_from_thread(self.update_mermaid, str(cache_path), from_cache=False)
+
+                elapsed = time.time() - start_time
+                self.app.log(f"  Total time: {elapsed:.2f}s")
+            else:
+                error_msg = f"HTTP {response.status_code}"
+                try:
+                    error_body = response.text[:200]  # First 200 chars of error
+                    if error_body:
+                        error_msg += f": {error_body}"
+                except:
+                    pass
+
+                self.app.log(f"✗ Mermaid fetch failed: {error_msg}")
+                self.app.log(f"  URL: {url_direct[:100]}...")
+                self.app.log(f"  Mermaid code ({len(script)} chars):\n{script[:300]}")
+
+                self.app.call_from_thread(self.show_error, error_msg)
         except Exception as e:
             if self.app.is_running:
+                self.app.log(f"✗ Mermaid error: {e}")
                 self.app.call_from_thread(self.show_error, str(e))
 
-    def update_mermaid(self, image_path: str) -> None:
+    def update_mermaid(self, image_path: str, from_cache: bool = False) -> None:
         try:
             from textual_image.widget import Image as ImageWidget
-            self.query_one("#loading-mermaid").remove()
+            from PIL import Image as PILImage
+
+            # Remove loading indicator
+            try:
+                self.query_one("#loading-mermaid").remove()
+            except Exception:
+                pass
+
+            # Get actual image dimensions
+            with PILImage.open(image_path) as pil_img:
+                img_width, img_height = pil_img.size
+
+            # Get terminal dimensions
+            terminal_height = self.app.size.height if hasattr(self.app, 'size') else 60
+            terminal_width = self.app.size.width if hasattr(self.app, 'size') else 120
+
+            # Calculate max height
+            max_diagram_height = max(30, int(terminal_height * 0.6))
+
+            self.app.log(f"  Image: {img_width}x{img_height}px")
+            self.app.log(f"  Terminal: {terminal_width}x{terminal_height} cells")
+            self.app.log(f"  Max height: {max_diagram_height} cells")
+
+            # Create and mount image widget
             img = ImageWidget(image_path)
+
+            # Set reasonable constraints based on terminal size
             img.styles.width = "auto"
             img.styles.height = "auto"
-            # Remove max_height constraint for better quality
-            # img.styles.max_height = 100
+            img.styles.max_height = max_diagram_height
             img.styles.margin = (1, 0)
-            # Enable upscaling for better quality
-            if hasattr(img, "upscale"):
-                img.upscale = True
+
             self.mount(img)
+
+            status = "from cache (instant)" if from_cache else "newly fetched"
+            self.app.log(f"✓ Mermaid displayed {status}")
+
         except Exception as e:
-            self.app.log(f"Error mounting mermaid image: {e}")
+            self.app.log(f"✗ Error mounting mermaid image: {e}")
+            import traceback
+            self.app.log(traceback.format_exc())
+            self.show_error(str(e))
 
     def show_error(self, error_msg: str) -> None:
         try:
-            self.query_one("#loading-mermaid").remove()
-            self.query_one("#code-content").remove_class("hidden")
-            self.mount(Static(f"Error: {error_msg}", classes="error"))
-        except Exception:
-            pass
+            # Remove loading indicator
+            try:
+                self.query_one("#loading-mermaid").remove()
+            except:
+                pass
+
+            # Show the original code
+            try:
+                self.query_one("#code-content").remove_class("hidden")
+            except:
+                pass
+
+            # Show detailed error message
+            error_text = f"[bold red]Mermaid Rendering Failed[/bold red]\n"
+            error_text += f"Error: {error_msg}\n\n"
+            error_text += "[dim]The original Mermaid code is shown above.[/dim]"
+
+            self.mount(Static(error_text, classes="error"))
+        except Exception as e:
+            # Last resort fallback
+            try:
+                self.mount(Static(f"Error: {error_msg}", classes="error"))
+            except:
+                pass
 
 class CustomMarkdown(Markdown):
     """Markdown widget with custom block support."""

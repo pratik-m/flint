@@ -53,3 +53,12 @@ MarkdownViewer:focus {
 #code-content {
     padding: 0 1;
 }
+
+/* Mermaid loading indicator */
+#loading-mermaid {
+    width: 100%;
+    height: auto;
+    min-height: 3;
+    padding: 1;
+    color: $accent;
+}
