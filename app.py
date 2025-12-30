@@ -15,13 +15,14 @@ from textual.command import Command, Hit, Provider, CommandPalette, DiscoveryHit
 
 from functools import partial
 
+
 class ThemeProvider(Provider):
     """A provider for themes."""
 
     @property
     def commands(self) -> list[tuple[str, callable]]:
         themes = self.app.available_themes
-        
+
         def set_app_theme(name: str) -> None:
             self.app.theme = name
 
@@ -54,6 +55,7 @@ class ThemeProvider(Provider):
                     callback,
                     help=f"Switch to the {name} theme",
                 )
+
 
 class StyleProvider(Provider):
     """A provider for visual styles."""
@@ -93,6 +95,7 @@ class StyleProvider(Provider):
                     help=f"Switch to the {name} visual style",
                 )
 
+
 class MainCommandProvider(Provider):
     """The main command provider that offers submenus."""
 
@@ -116,7 +119,7 @@ class MainCommandProvider(Provider):
 
     async def search(self, query: str) -> Iterable[Hit]:
         matcher = self.matcher(query)
-        
+
         # Switch Style...
         name = "Switch Style..."
         if (match := matcher.match(name)) > 0:
@@ -126,7 +129,7 @@ class MainCommandProvider(Provider):
                 self.app.action_search_styles,
                 help="Open the style selection menu",
             )
-            
+
         # Switch Theme...
         name = "Switch Theme..."
         if (match := matcher.match(name)) > 0:
@@ -136,7 +139,7 @@ class MainCommandProvider(Provider):
                 self.app.action_search_themes,
                 help="Open the theme selection menu",
             )
-            
+
         # Clear Cache
         name = "Clear Cache"
         if (match := matcher.match(name)) > 0:
@@ -146,6 +149,7 @@ class MainCommandProvider(Provider):
                 self.app.action_clear_cache,
                 help="Remove all cached images and diagrams",
             )
+
 
 class TextualMarkdownApp(App):
     """A Textual app to view Markdown files with Vim-like motions and theme support."""
@@ -163,9 +167,9 @@ class TextualMarkdownApp(App):
     BINDINGS = [
         Binding("q", "quit", "Quit", show=True),
         Binding("t", "toggle_sidebar", "Toggle Sidebar", show=True),
-        Binding("/", "search", "Search", show=True),
-        Binding("n", "find_next", "Find Next", show=True),
-        Binding("N", "find_prev", "Find Prev", show=True),
+        Binding("/", "search", "Search", show=False),
+        Binding("n", "find_next", "Find Next", show=False),
+        Binding("N", "find_prev", "Find Prev", show=False),
         Binding("j", "scroll_down", "Scroll Down", show=False),
         Binding("k", "scroll_up", "Scroll Up", show=False),
         Binding("h", "scroll_left", "Scroll Left", show=False),
@@ -174,8 +178,8 @@ class TextualMarkdownApp(App):
         Binding("G", "scroll_bottom", "Scroll to Bottom", show=False),
         Binding("ctrl+p", "command_palette", "Command Palette", show=True),
         Binding("escape", "hide_search", "Hide Search", show=False),
-        Binding("ctrl+o", "back", "Back", show=True),
-        Binding("ctrl+i", "forward", "Forward", show=True),
+        Binding("ctrl+o", "back", "Back", show=False),
+        Binding("ctrl+i", "forward", "Forward", show=False),
         Binding("ctrl+u", "scroll_half_up", "Half Page Up", show=False),
         Binding("ctrl+d", "scroll_half_down", "Half Page Down", show=False),
     ]
@@ -190,15 +194,20 @@ class TextualMarkdownApp(App):
         self.history: list[Path] = []
         self.forward_stack: list[Path] = []
         self._loaded_styles: set[str] = {"obsidian"}  # Track loaded styles
-        self._highlighted_blocks: set[Widget] = set()  # Track blocks with search highlights
+        self._highlighted_blocks: set[Widget] = (
+            set()
+        )  # Track blocks with search highlights
 
     def compose(self) -> ComposeResult:
         from custom_markdown import CustomMarkdownViewer
+
         yield Header()
         # Create empty viewer - content will be loaded asynchronously
         # Sidebar hidden by default, toggle with 't' key
         yield CustomMarkdownViewer("", show_table_of_contents=False)
-        yield Input(placeholder="Search document...", id="search-input", classes="hidden")
+        yield Input(
+            placeholder="Search document...", id="search-input", classes="hidden"
+        )
         yield Footer()
 
     def watch_current_style(self, old_style: str, new_style: str) -> None:
@@ -227,7 +236,10 @@ class TextualMarkdownApp(App):
             # Store content for search
             if self.file_path and self.file_path.exists():
                 import asyncio
-                self.markdown_content = await asyncio.to_thread(self.file_path.read_text, encoding="utf-8")
+
+                self.markdown_content = await asyncio.to_thread(
+                    self.file_path.read_text, encoding="utf-8"
+                )
 
             # Focus the viewer
             viewer.focus()
@@ -270,6 +282,7 @@ class TextualMarkdownApp(App):
 
     def action_toggle_sidebar(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.show_table_of_contents = not viewer.show_table_of_contents
 
@@ -307,6 +320,7 @@ class TextualMarkdownApp(App):
         if not search_input.has_class("hidden"):
             search_input.add_class("hidden")
             from custom_markdown import CustomMarkdownViewer
+
             self.query_one(CustomMarkdownViewer).focus()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
@@ -318,7 +332,7 @@ class TextualMarkdownApp(App):
                 self.clear_highlights()
                 self.search_results = []
                 self.current_search_index = -1
-            
+
             self.action_hide_search()
 
     @work(exclusive=True)
@@ -327,16 +341,16 @@ class TextualMarkdownApp(App):
         self.search_query = query
         self.search_results = []
         self.current_search_index = -1
-        
+
         # Clear previous highlights
         self.clear_highlights()
-        
+
         if not self.search_query:
             return
 
         from custom_markdown import CustomMarkdownViewer, CustomMarkdown
         from textual.widgets._markdown import MarkdownBlock
-        
+
         try:
             viewer = self.query_one(CustomMarkdownViewer)
             markdown = viewer.query_one(CustomMarkdown)
@@ -345,10 +359,12 @@ class TextualMarkdownApp(App):
 
         # Find all matching blocks in a single pass
         lines = self.markdown_content.splitlines()
-        matching_line_indices = {i for i, line in enumerate(lines) if self.search_query in line.lower()}
-        
+        matching_line_indices = {
+            i for i, line in enumerate(lines) if self.search_query in line.lower()
+        }
+
         blocks = list(markdown.walk_children(MarkdownBlock))
-        
+
         for block in blocks:
             found = False
             # Check source range
@@ -358,12 +374,12 @@ class TextualMarkdownApp(App):
                     if line_idx in matching_line_indices:
                         found = True
                         break
-            
+
             # Fallback: search rendered text
             if not found and hasattr(block, "_content"):
                 if self.search_query in block._content.plain.lower():
                     found = True
-            
+
             if found:
                 self.search_results.append(block)
 
@@ -372,7 +388,9 @@ class TextualMarkdownApp(App):
             self.current_search_index = 0
             self.jump_to_match()
         else:
-            self.notify(f"No matches found for '{self.search_query}'", severity="warning")
+            self.notify(
+                f"No matches found for '{self.search_query}'", severity="warning"
+            )
 
     def clear_highlights(self) -> None:
         """Clear all search highlights efficiently."""
@@ -389,7 +407,7 @@ class TextualMarkdownApp(App):
     def apply_highlights(self) -> None:
         if not self.search_query:
             return
-            
+
         for block in self.search_results:
             if hasattr(block, "_content"):
                 plain = block._content.plain.lower()
@@ -400,10 +418,12 @@ class TextualMarkdownApp(App):
                     if idx == -1:
                         break
                     # Apply highlight style
-                    block._content.stylize_before(idx, idx + len(self.search_query), "reverse")
+                    block._content.stylize_before(
+                        idx, idx + len(self.search_query), "reverse"
+                    )
                     start = idx + len(self.search_query)
                     highlighted = True
-                
+
                 if highlighted:
                     block.update(block._content)
                     self._highlighted_blocks.add(block)
@@ -411,15 +431,16 @@ class TextualMarkdownApp(App):
     def jump_to_match(self) -> None:
         if 0 <= self.current_search_index < len(self.search_results):
             from custom_markdown import CustomMarkdownViewer, CustomMarkdown
+
             viewer = self.query_one(CustomMarkdownViewer)
             block = self.search_results[self.current_search_index]
-            
+
             # Ensure the block is visible if it's in a collapsed section
             markdown = viewer.query_one(CustomMarkdown)
             markdown.ensure_visible(block)
-            
+
             viewer.scroll_to_widget(block)
-            
+
             # Highlight current match distinctly
             # We re-apply all highlights first to clear previous "current" highlight
             self.apply_highlights()
@@ -427,58 +448,74 @@ class TextualMarkdownApp(App):
                 plain = block._content.plain.lower()
                 idx = plain.find(self.search_query)
                 if idx != -1:
-                    block._content.stylize_before(idx, idx + len(self.search_query), "bold reverse underline")
+                    block._content.stylize_before(
+                        idx, idx + len(self.search_query), "bold reverse underline"
+                    )
                     block.update(block._content)
-            
-            self.notify(f"Match {self.current_search_index + 1} of {len(self.search_results)}")
+
+            self.notify(
+                f"Match {self.current_search_index + 1} of {len(self.search_results)}"
+            )
 
     def action_find_next(self) -> None:
         if self.search_results:
-            self.current_search_index = (self.current_search_index + 1) % len(self.search_results)
+            self.current_search_index = (self.current_search_index + 1) % len(
+                self.search_results
+            )
             self.jump_to_match()
 
     def action_find_prev(self) -> None:
         if self.search_results:
-            self.current_search_index = (self.current_search_index - 1) % len(self.search_results)
+            self.current_search_index = (self.current_search_index - 1) % len(
+                self.search_results
+            )
             self.jump_to_match()
 
     def action_scroll_down(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_down()
 
     def action_scroll_up(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_up()
 
     def action_scroll_left(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_left()
 
     def action_scroll_right(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_right()
 
     def action_scroll_top(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_home()
 
     def action_scroll_bottom(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_end()
 
     def action_scroll_half_up(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
-        viewer.scroll_page_up(duration=0.1) 
+        viewer.scroll_page_up(duration=0.1)
 
     def action_scroll_half_down(self) -> None:
         from custom_markdown import CustomMarkdownViewer
+
         viewer = self.query_one(CustomMarkdownViewer)
         viewer.scroll_page_down(duration=0.1)
 
@@ -511,13 +548,18 @@ class TextualMarkdownApp(App):
         """Reload content using async pattern."""
         if self.file_path and self.file_path.exists():
             from custom_markdown import CustomMarkdownViewer
+
             viewer = self.query_one(CustomMarkdownViewer)
             # Use async load pattern
             await viewer.document.load(self.file_path)
             # Store content for search
             import asyncio
-            self.markdown_content = await asyncio.to_thread(self.file_path.read_text, encoding="utf-8")
+
+            self.markdown_content = await asyncio.to_thread(
+                self.file_path.read_text, encoding="utf-8"
+            )
             viewer.scroll_home(animate=False)
+
 
 def main():
     """Main entry point for the application."""
@@ -525,6 +567,7 @@ def main():
     path = Path(file_arg) if file_arg else None
     app = TextualMarkdownApp(path)
     app.run()
+
 
 if __name__ == "__main__":
     main()

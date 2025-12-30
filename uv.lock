@@ -69,6 +69,31 @@ wheels = [
 ]
 
 [[package]]
+name = "flint-markdown-viewer"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "mermaid-py" },
+    { name = "pillow" },
+    { name = "platformdirs" },
+    { name = "requests" },
+    { name = "term-image" },
+    { name = "textual" },
+    { name = "textual-image", extra = ["textual"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mermaid-py", specifier = ">=0.8.1" },
+    { name = "pillow", specifier = ">=10.4.0" },
+    { name = "platformdirs", specifier = ">=4.0.0" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "term-image", specifier = ">=0.7.2" },
+    { name = "textual", specifier = ">=0.86.0" },
+    { name = "textual-image", extras = ["textual"], specifier = ">=0.8.4" },
+]
+
+[[package]]
 name = "idna"
 version = "3.11"
 source = { registry = "https://pypi.org/simple" }
@@ -261,31 +286,6 @@ wheels = [
 [package.optional-dependencies]
 textual = [
     { name = "textual" },
-]
-
-[[package]]
-name = "textual-md-viewer"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "mermaid-py" },
-    { name = "pillow" },
-    { name = "platformdirs" },
-    { name = "requests" },
-    { name = "term-image" },
-    { name = "textual" },
-    { name = "textual-image", extra = ["textual"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mermaid-py", specifier = ">=0.8.1" },
-    { name = "pillow", specifier = ">=10.4.0" },
-    { name = "platformdirs", specifier = ">=4.0.0" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "term-image", specifier = ">=0.7.2" },
-    { name = "textual", specifier = ">=6.11.0" },
-    { name = "textual-image", extras = ["textual"], specifier = ">=0.8.4" },
 ]
 
 [[package]]

@@ -20,7 +20,7 @@ from textual.widgets._markdown import (
     MarkdownTableOfContents,
     MarkdownTable,
     MarkdownBlockQuote,
-    slug_for_tcss_id
+    slug_for_tcss_id,
 )
 from textual.content import Content
 from markdown_it.token import Token
@@ -32,9 +32,10 @@ from textual_image.widget import TGPImage
 _HEADER_CLEANUP_RE = re.compile(r"^[▼▶]\s*|\s*[#=\-]+$|^\n+")
 
 # Pre-compiled regex for image and callout preprocessing
-_IMG_PATTERN = re.compile(r'!\[([^\]]*)\]\(([^\)]+)\)')
-_CALLOUT_PATTERN = re.compile(r'^>\s*\[!([^\]]+)\](.*)$', re.MULTILINE)
-_BOLD_CALLOUT_PATTERN = re.compile(r'^>\s*\*\*([^*]+)\*\*(.*)$', re.MULTILINE)
+_IMG_PATTERN = re.compile(r"!\[([^\]]*)\]\(([^\)]+)\)")
+_CALLOUT_PATTERN = re.compile(r"^>\s*\[!([^\]]+)\](.*)$", re.MULTILINE)
+_BOLD_CALLOUT_PATTERN = re.compile(r"^>\s*\*\*([^*]+)\*\*(.*)$", re.MULTILINE)
+
 
 class SmartImageFence(MarkdownFence):
     """A Markdown fence that renders images asynchronously."""
@@ -61,18 +62,18 @@ class SmartImageFence(MarkdownFence):
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
             # Parse: first line is URL/path, rest is alt text
-            lines = self.code.strip().split('\n')
+            lines = self.code.strip().split("\n")
             url_or_path = lines[0].strip()
 
             # Check if it's a local file path
-            is_local = not url_or_path.startswith(('http://', 'https://'))
+            is_local = not url_or_path.startswith(("http://", "https://"))
 
             if is_local:
                 # Handle local file
                 local_path = Path(url_or_path)
 
                 # Make path absolute if relative (relative to markdown file location)
-                if not local_path.is_absolute() and hasattr(self.app, 'file_path'):
+                if not local_path.is_absolute() and hasattr(self.app, "file_path"):
                     local_path = self.app.file_path.parent / local_path
 
                 if local_path.exists():
@@ -90,9 +91,13 @@ class SmartImageFence(MarkdownFence):
                         if not cache_path.exists():
                             ratio = MAX_WIDTH / img.width
                             new_height = int(img.height * ratio)
-                            resized = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                            resized = img.resize(
+                                (MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS
+                            )
                             resized.save(cache_path, "PNG", optimize=True)
-                            self.app.log(f"  Resized local image to {MAX_WIDTH}x{new_height}")
+                            self.app.log(
+                                f"  Resized local image to {MAX_WIDTH}x{new_height}"
+                            )
 
                         self.app.call_from_thread(self.display_image, str(cache_path))
                     else:
@@ -100,7 +105,9 @@ class SmartImageFence(MarkdownFence):
                         self.app.call_from_thread(self.display_image, str(local_path))
                 else:
                     self.app.log(f"✗ Local image not found: {local_path}")
-                    self.app.call_from_thread(self.show_image_error, f"File not found: {local_path.name}")
+                    self.app.call_from_thread(
+                        self.show_image_error, f"File not found: {local_path.name}"
+                    )
             else:
                 # Handle remote URL
                 import requests
@@ -133,15 +140,21 @@ class SmartImageFence(MarkdownFence):
                     if img.width > MAX_WIDTH:
                         ratio = MAX_WIDTH / img.width
                         new_height = int(img.height * ratio)
-                        img = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
-                        self.app.log(f"  Resized to {MAX_WIDTH}x{new_height} for terminal")
+                        img = img.resize(
+                            (MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS
+                        )
+                        self.app.log(
+                            f"  Resized to {MAX_WIDTH}x{new_height} for terminal"
+                        )
 
                     # Save resized image to cache
                     img.save(cache_path, "PNG", optimize=True)
                     self.app.log(f"  Cached to: {cache_path.name}")
                     self.app.call_from_thread(self.display_image, str(cache_path))
                 else:
-                    self.app.call_from_thread(self.show_image_error, f"HTTP {response.status_code}")
+                    self.app.call_from_thread(
+                        self.show_image_error, f"HTTP {response.status_code}"
+                    )
 
         except Exception as e:
             if self.app.is_running:
@@ -158,6 +171,7 @@ class SmartImageFence(MarkdownFence):
 
             # Create image widget using TGP rendering with unique ID
             import os
+
             img_id = f"img-{os.path.basename(image_path)[:16]}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
@@ -184,7 +198,9 @@ class SmartImageFence(MarkdownFence):
                 self.query_one("#loading-image").remove()
             except:
                 pass
-            self.mount(Static(f"[red]Image load failed: {error_msg}[/red]", classes="error"))
+            self.mount(
+                Static(f"[red]Image load failed: {error_msg}[/red]", classes="error")
+            )
         except:
             pass
 
@@ -235,18 +251,18 @@ class SmartMarkdownFence(MarkdownFence):
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
             # Parse: first line is URL/path, rest is alt text
-            lines = self.code.strip().split('\n')
+            lines = self.code.strip().split("\n")
             url_or_path = lines[0].strip()
 
             # Check if it's a local file path
-            is_local = not url_or_path.startswith(('http://', 'https://'))
+            is_local = not url_or_path.startswith(("http://", "https://"))
 
             if is_local:
                 # Handle local file
                 local_path = Path(url_or_path)
 
                 # Make path absolute if relative (relative to markdown file location)
-                if not local_path.is_absolute() and hasattr(self.app, 'file_path'):
+                if not local_path.is_absolute() and hasattr(self.app, "file_path"):
                     local_path = self.app.file_path.parent / local_path
 
                 if local_path.exists():
@@ -264,9 +280,13 @@ class SmartMarkdownFence(MarkdownFence):
                         if not cache_path.exists():
                             ratio = MAX_WIDTH / img.width
                             new_height = int(img.height * ratio)
-                            resized = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                            resized = img.resize(
+                                (MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS
+                            )
                             resized.save(cache_path, "PNG", optimize=True)
-                            self.app.log(f"  Resized local image to {MAX_WIDTH}x{new_height}")
+                            self.app.log(
+                                f"  Resized local image to {MAX_WIDTH}x{new_height}"
+                            )
 
                         self.app.call_from_thread(self.display_image, str(cache_path))
                     else:
@@ -274,7 +294,9 @@ class SmartMarkdownFence(MarkdownFence):
                         self.app.call_from_thread(self.display_image, str(local_path))
                 else:
                     self.app.log(f"✗ Local image not found: {local_path}")
-                    self.app.call_from_thread(self.show_image_error, f"File not found: {local_path.name}")
+                    self.app.call_from_thread(
+                        self.show_image_error, f"File not found: {local_path.name}"
+                    )
             else:
                 # Handle remote URL
                 import requests
@@ -307,15 +329,21 @@ class SmartMarkdownFence(MarkdownFence):
                     if img.width > MAX_WIDTH:
                         ratio = MAX_WIDTH / img.width
                         new_height = int(img.height * ratio)
-                        img = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
-                        self.app.log(f"  Resized to {MAX_WIDTH}x{new_height} for terminal")
+                        img = img.resize(
+                            (MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS
+                        )
+                        self.app.log(
+                            f"  Resized to {MAX_WIDTH}x{new_height} for terminal"
+                        )
 
                     # Save resized image to cache
                     img.save(cache_path, "PNG", optimize=True)
                     self.app.log(f"  Cached to: {cache_path.name}")
                     self.app.call_from_thread(self.display_image, str(cache_path))
                 else:
-                    self.app.call_from_thread(self.show_image_error, f"HTTP {response.status_code}")
+                    self.app.call_from_thread(
+                        self.show_image_error, f"HTTP {response.status_code}"
+                    )
 
         except Exception as e:
             if self.app.is_running:
@@ -333,6 +361,7 @@ class SmartMarkdownFence(MarkdownFence):
 
             # Create image widget using TGP rendering with unique ID
             import os
+
             img_id = f"img-{os.path.basename(image_path)[:16]}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
@@ -360,7 +389,9 @@ class SmartMarkdownFence(MarkdownFence):
                 self.query_one("#loading-image").remove()
             except:
                 pass
-            self.mount(Static(f"[red]Image load failed: {error_msg}[/red]", classes="error"))
+            self.mount(
+                Static(f"[red]Image load failed: {error_msg}[/red]", classes="error")
+            )
         except:
             pass
 
@@ -383,8 +414,12 @@ class SmartMarkdownFence(MarkdownFence):
             # Check cache first
             if cache_path.exists():
                 cache_size = cache_path.stat().st_size / 1024  # KB
-                self.app.log(f"→ Mermaid cache HIT: {cache_key[:8]} ({cache_size:.1f}KB)")
-                self.app.call_from_thread(self.update_mermaid, str(cache_path), from_cache=True)
+                self.app.log(
+                    f"→ Mermaid cache HIT: {cache_key[:8]} ({cache_size:.1f}KB)"
+                )
+                self.app.call_from_thread(
+                    self.update_mermaid, str(cache_path), from_cache=True
+                )
                 elapsed = time.time() - start_time
                 self.app.log(f"  Cache load time: {elapsed:.3f}s")
                 return
@@ -393,16 +428,20 @@ class SmartMarkdownFence(MarkdownFence):
 
             # Use smaller width for better terminal rendering quality
             # width=800 is smaller but may render better at terminal resolution
-            encoded_direct = base64.urlsafe_b64encode(script.encode('utf-8')).decode('ascii')
+            encoded_direct = base64.urlsafe_b64encode(script.encode("utf-8")).decode(
+                "ascii"
+            )
             url_direct = f"https://mermaid.ink/img/{encoded_direct}?bgColor=transparent&width=800"
 
-            if not self.app.is_running: return
+            if not self.app.is_running:
+                return
 
             fetch_start = time.time()
             response = requests.get(url_direct, timeout=15)
             fetch_time = time.time() - fetch_start
 
-            if not self.app.is_running: return
+            if not self.app.is_running:
+                return
 
             if response.status_code == 200:
                 size_kb = len(response.content) / 1024
@@ -413,7 +452,9 @@ class SmartMarkdownFence(MarkdownFence):
                     f.write(response.content)
 
                 self.app.log(f"  Cached to: {cache_path.name}")
-                self.app.call_from_thread(self.update_mermaid, str(cache_path), from_cache=False)
+                self.app.call_from_thread(
+                    self.update_mermaid, str(cache_path), from_cache=False
+                )
 
                 elapsed = time.time() - start_time
                 self.app.log(f"  Total time: {elapsed:.2f}s")
@@ -445,12 +486,13 @@ class SmartMarkdownFence(MarkdownFence):
                 img_width, img_height = pil_img.size
 
             # Get terminal dimensions
-            terminal_height = self.app.size.height if hasattr(self.app, 'size') else 60
+            terminal_height = self.app.size.height if hasattr(self.app, "size") else 60
 
             self.app.log(f"  Image: {img_width}x{img_height}px")
 
             # Create image widget using TGP rendering with unique ID
             import os
+
             img_id = f"img-{os.path.basename(image_path)[:16]}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
@@ -480,6 +522,7 @@ class SmartMarkdownFence(MarkdownFence):
         except Exception as e:
             self.app.log(f"✗ Error: {e}")
             import traceback
+
             self.app.log(traceback.format_exc())
             self.show_error(str(e))
 
@@ -510,6 +553,7 @@ class SmartMarkdownFence(MarkdownFence):
             except:
                 pass
 
+
 class InteractiveTable(MarkdownTable):
     """A Markdown table that renders as an interactive DataTable."""
 
@@ -520,6 +564,7 @@ class InteractiveTable(MarkdownTable):
     def on_mount(self) -> None:
         """Schedule data extraction after children are mounted."""
         from textual.widgets import DataTable
+
         # Mount DataTable manually
         self.mount(DataTable())
         self.call_later(self._extract_table_data)
@@ -533,23 +578,24 @@ class InteractiveTable(MarkdownTable):
             table.cursor_type = "row"
             table.zebra_stripes = True
             table.clear(columns=True)
-            
+
             # Use inherited method to get data from self._blocks
             # This is populated by the Markdown parser before the widget is mounted
             headers, rows = self._get_headers_and_rows()
-            
+
             # Convert Content objects to plain text
             plain_headers = [h.plain for h in headers]
             plain_rows = [[c.plain for c in row] for row in rows]
-            
+
             if plain_headers:
                 table.add_columns(*plain_headers)
-            
+
             if plain_rows:
                 table.add_rows(plain_rows)
 
         except Exception:
             pass
+
 
 class CustomMarkdown(Markdown):
     """Markdown widget with custom block support."""
@@ -568,7 +614,14 @@ class CustomMarkdown(Markdown):
         if markdown:
             markdown = self._preprocess_markdown(markdown)
 
-        super().__init__(markdown, name=name, id=id, classes=classes, parser_factory=parser_factory, open_links=open_links)
+        super().__init__(
+            markdown,
+            name=name,
+            id=id,
+            classes=classes,
+            parser_factory=parser_factory,
+            open_links=open_links,
+        )
         self.BLOCKS = self.BLOCKS.copy()
         self.BLOCKS["fence"] = SmartMarkdownFence
         self.BLOCKS["table_open"] = InteractiveTable
@@ -578,18 +631,20 @@ class CustomMarkdown(Markdown):
     @staticmethod
     def _preprocess_markdown(markdown: str) -> str:
         """Preprocess markdown for images and callouts."""
+
         # 1. Images: Convert ![alt](url) to ~~~image fence blocks
         def replace_image(match):
             alt = match.group(1)
             url = match.group(2)
             return f"~~~image\n{url}\n{alt}\n~~~"
+
         markdown = _IMG_PATTERN.sub(replace_image, markdown)
 
         # 2. Callouts: Convert > [!TYPE] Title or > **TYPE** to styled header
         def replace_callout(match):
             ctype = match.group(1).upper()
             title = match.group(2).strip()
-            
+
             # Map types to icons
             icons = {
                 "INFO": "ℹ️",
@@ -607,21 +662,21 @@ class CustomMarkdown(Markdown):
                 "DANGER": "⚡",
                 "BUG": "🐛",
                 "EXAMPLE": "🧪",
-                "QUOTE": "💬"
+                "QUOTE": "💬",
             }
             icon = icons.get(ctype, "📝")
-            
+
             # Create a bold header with icon
             header = f"**{icon} {ctype}**"
             if title:
                 header += f" {title}"
-            
+
             # Return the header and an empty blockquote line to separate from content
             return f"> {header}\n> "
-            
+
         markdown = _CALLOUT_PATTERN.sub(replace_callout, markdown)
         markdown = _BOLD_CALLOUT_PATTERN.sub(replace_callout, markdown)
-        
+
         return markdown
 
     @staticmethod
@@ -632,6 +687,7 @@ class CustomMarkdown(Markdown):
     async def load(self, path: Path) -> None:
         """Override load to preprocess markdown."""
         import asyncio
+
         # Read file in thread to avoid blocking
         content = await asyncio.to_thread(path.read_text, encoding="utf-8")
         # Preprocess markdown before passing to parent load
@@ -658,7 +714,7 @@ class CustomMarkdown(Markdown):
     def toggle_section(self, header: MarkdownHeader) -> None:
         header_id = id(header)
         is_collapsing = header_id not in self._collapsed_headers
-        
+
         if is_collapsing:
             self._collapsed_headers.add(header_id)
         else:
@@ -674,10 +730,10 @@ class CustomMarkdown(Markdown):
         except ValueError:
             return
 
-        for block in blocks[start_idx + 1:]:
+        for block in blocks[start_idx + 1 :]:
             if isinstance(block, MarkdownHeader) and block.LEVEL <= header.LEVEL:
                 break
-            
+
             if is_collapsing:
                 block.add_class("collapsed")
             else:
@@ -686,15 +742,15 @@ class CustomMarkdown(Markdown):
     def update_header_icon(self, header: MarkdownHeader, expanded: bool) -> None:
         if not hasattr(header, "_content"):
             return
-            
+
         icon = "▼ " if expanded else "▶ "
-        
+
         if hasattr(header, "_original_text"):
             plain = header._original_text
         else:
             plain = _HEADER_CLEANUP_RE.sub("", header._content.plain)
             header._original_text = plain
-        
+
         new_text = icon + plain
         header._content = Content(new_text)
         if header.is_mounted:
@@ -709,7 +765,7 @@ class CustomMarkdown(Markdown):
 
         current_idx = idx
         required_levels = list(range(1, 7))
-        
+
         while current_idx >= 0 and required_levels:
             item = blocks[current_idx]
             if isinstance(item, MarkdownHeader) and item.LEVEL in required_levels:
@@ -717,6 +773,7 @@ class CustomMarkdown(Markdown):
                     self.toggle_section(item)
                 required_levels = [l for l in required_levels if l < item.LEVEL]
             current_idx -= 1
+
 
 class FastMarkdownContent(VerticalScroll, can_focus=True):
     """Fast markdown content using Rich rendering (single widget)."""
@@ -737,7 +794,9 @@ class CustomMarkdownViewer(VerticalScroll, can_focus=True):
 
     show_table_of_contents = reactive(True)
 
-    def __init__(self, markdown: str = "", show_table_of_contents: bool = True, **kwargs):
+    def __init__(
+        self, markdown: str = "", show_table_of_contents: bool = True, **kwargs
+    ):
         super().__init__(**kwargs)
         self._markdown_content = markdown
         self.show_table_of_contents = show_table_of_contents
@@ -778,6 +837,7 @@ class CustomMarkdownViewer(VerticalScroll, can_focus=True):
         if parsed.scheme in ("http", "https", "mailto"):
             try:
                 import webbrowser
+
                 webbrowser.open(href)
             except Exception:
                 pass
