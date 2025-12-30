@@ -190,6 +190,11 @@ class TextualMarkdownApp(App):
     def __init__(self, file_path: Path | None = None):
         super().__init__()
         self.file_path = file_path
+        # Set dynamic title with filename
+        if file_path:
+            self.title = f"Flint - {file_path.name}"
+        else:
+            self.title = "Flint"
         self.markdown_content: str = ""  # Store for search
         self.search_results: list[Widget] = []
         self.current_search_index: int = -1

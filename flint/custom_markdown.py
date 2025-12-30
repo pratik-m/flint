@@ -172,7 +172,10 @@ class SmartImageFence(MarkdownFence):
             # Create image widget using TGP rendering with unique ID
             import os
 
-            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            # Remove file extension and sanitize for valid ID (no dots allowed)
+            base_name = os.path.basename(image_path)
+            name_without_ext = os.path.splitext(base_name)[0]
+            img_id = f"img-{name_without_ext[:16].replace('-', '_')}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
             img.styles.height = "auto"
@@ -362,7 +365,10 @@ class SmartMarkdownFence(MarkdownFence):
             # Create image widget using TGP rendering with unique ID
             import os
 
-            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            # Remove file extension and sanitize for valid ID (no dots allowed)
+            base_name = os.path.basename(image_path)
+            name_without_ext = os.path.splitext(base_name)[0]
+            img_id = f"img-{name_without_ext[:16].replace('-', '_')}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
             img.styles.height = "auto"
@@ -493,7 +499,10 @@ class SmartMarkdownFence(MarkdownFence):
             # Create image widget using TGP rendering with unique ID
             import os
 
-            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            # Remove file extension and sanitize for valid ID (no dots allowed)
+            base_name = os.path.basename(image_path)
+            name_without_ext = os.path.splitext(base_name)[0]
+            img_id = f"img-{name_without_ext[:16].replace('-', '_')}"
             img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
             img.styles.height = "auto"

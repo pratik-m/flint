@@ -2,6 +2,29 @@
 
 Flint is a premium, terminal-based Markdown viewer built with [Textual](https://textual.textualize.io/). Designed for speed, aesthetics, and a seamless Obsidian-like experience in your terminal.
 
+## 📸 Screenshots
+
+![Screenshot 1](screenshots/screenshot1.png)
+_Flint with default Obsidian style_
+
+![Screenshot 2](screenshots/screenshot2.png)
+_Retro style theme showcase_
+
+![Screenshot 3](screenshots/screenshot3.png)
+_Cyberpunk style theme showcase_
+
+![Screenshot 4](screenshots/screenshot4.png)
+_Interactive tables rendered as native Textual DataTable widgets_
+
+![Screenshot 5](screenshots/screenshot5.png)
+_High-resolution image rendering with Terminal Graphics Protocol_
+
+![Screenshot 6](screenshots/screenshot6.png)
+_Mermaid diagram rendered natively in the terminal_
+
+![Screenshot 7](screenshots/screenshot7.png)
+_Obsidian-style callouts with automatic icons_
+
 ## ✨ Features
 
 - **📊 Interactive Tables**: Markdown tables are rendered as interactive `DataTable` widgets with row selection, hover effects, and smooth scrolling.
@@ -14,16 +37,19 @@ Flint is a premium, terminal-based Markdown viewer built with [Textual](https://
 ## 🚀 Installation
 
 ### Using `pip`
+
 ```bash
 pip install flint-markdown-viewer
 ```
 
 ### Using `pipx` (Recommended for CLI tools)
+
 ```bash
 pipx install flint-markdown-viewer
 ```
 
 ### Using `uv` (Fastest)
+
 ```bash
 # One-time run
 uvx --from flint-markdown-viewer flint your-file.md
@@ -42,17 +68,18 @@ flint your-file.md
 
 ### Key Bindings
 
-| Key | Action |
-| --- | --- |
-| `q` | Quit |
-| `j` / `k` | Scroll Down / Up |
-| `g` / `G` | Scroll to Top / Bottom |
-| `Ctrl+U` / `Ctrl+D` | Scroll Half Page Up / Down |
-| `Ctrl+P` | Open Command Palette (Switch Styles/Themes) |
+| Key                 | Action                                      |
+| ------------------- | ------------------------------------------- |
+| `q`                 | Quit                                        |
+| `j` / `k`           | Scroll Down / Up                            |
+| `g` / `G`           | Scroll to Top / Bottom                      |
+| `Ctrl+U` / `Ctrl+D` | Scroll Half Page Up / Down                  |
+| `Ctrl+P`            | Open Command Palette (Switch Styles/Themes) |
 
 ## 🛠️ Configuration
 
 The app follows XDG standards:
+
 - **Config Directory**: `~/.config/textual-md-viewer/`
 - **Cache Directory**: `~/.cache/textual-md-viewer/` (images and Mermaid diagrams)
 
@@ -82,3 +109,4 @@ Contributions are welcome! Feel free to open an issue or submit a pull request.
 ## 📄 License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
