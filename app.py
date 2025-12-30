@@ -181,6 +181,7 @@ class TextualMarkdownApp(App):
     def __init__(self, file_path: Path | None = None):
         super().__init__()
         self.file_path = file_path
+        self.markdown_content: str = ""  # Store for search
         self.search_results: list[Widget] = []
         self.current_search_index: int = -1
         self.search_query: str = ""
@@ -219,6 +220,10 @@ class TextualMarkdownApp(App):
 
             # Load content asynchronously
             await viewer.load(self.file_path)
+
+            # Store content for search
+            if self.file_path and self.file_path.exists():
+                self.markdown_content = self.file_path.read_text(encoding="utf-8")
 
             # Focus the viewer
             viewer.focus()
@@ -496,6 +501,8 @@ class TextualMarkdownApp(App):
             viewer = self.query_one(CustomMarkdownViewer)
             # Use async load pattern
             await viewer.document.load(self.file_path)
+            # Store content for search
+            self.markdown_content = self.file_path.read_text(encoding="utf-8")
             viewer.scroll_home(animate=False)
 
 def main():

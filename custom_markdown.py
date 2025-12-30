@@ -12,6 +12,7 @@ from textual import work, events
 from textual.app import ComposeResult
 from textual.widgets import Markdown, Static, Label, LoadingIndicator, MarkdownViewer
 from textual.containers import Vertical, VerticalScroll
+from textual.reactive import reactive
 from textual.widgets._markdown import (
     MarkdownBlock,
     MarkdownFence,
@@ -221,28 +222,49 @@ class FastMarkdownContent(VerticalScroll, can_focus=True):
         static.update(RichMarkdown(content))
 
 
-class CustomMarkdownViewer(MarkdownViewer):
-    """Markdown viewer using plain Textual Markdown - fast and simple."""
+class CustomMarkdownViewer(VerticalScroll, can_focus=True):
+    """Markdown viewer with Mermaid support and table of contents."""
 
-    def __init__(self, markdown: str = "", **kwargs):
-        # Let MarkdownViewer handle everything
-        super().__init__(markdown, **kwargs)
+    show_table_of_contents = reactive(True)
+
+    def __init__(self, markdown: str = "", show_table_of_contents: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self._markdown_content = markdown
+        self.show_table_of_contents = show_table_of_contents
+
+    def compose(self) -> ComposeResult:
+        """Compose the viewer with TOC and CustomMarkdown."""
+        if self.show_table_of_contents:
+            yield MarkdownTableOfContents()
+        yield CustomMarkdown(self._markdown_content)
+
+    def watch_show_table_of_contents(self, show: bool) -> None:
+        """Toggle table of contents visibility."""
+        try:
+            toc = self.query_one(MarkdownTableOfContents)
+            toc.display = show
+        except Exception:
+            pass
 
     @property
-    def document(self) -> Markdown:
-        """Get the markdown document widget."""
-        return self.query_one(Markdown)
+    def document(self) -> CustomMarkdown:
+        """Get the CustomMarkdown widget."""
+        return self.query_one(CustomMarkdown)
 
     async def load(self, path: Path) -> None:
-        """Load markdown from a file using Textual's async load."""
-        await self.document.load(path)
-        self.scroll_home(animate=False)
+        """Load markdown from a file asynchronously."""
+        try:
+            markdown_widget = self.document
+            await markdown_widget.load(path)
+            self.scroll_home(animate=False)
+        except Exception as e:
+            self.app.log(f"Error loading markdown: {e}")
 
     async def go(self, location: str | Path) -> None:
+        """Navigate to a location (file or URL)."""
         href = str(location)
-        from urllib.parse import urlparse
         parsed = urlparse(href)
-        
+
         if parsed.scheme in ("http", "https", "mailto"):
             try:
                 import webbrowser
@@ -250,13 +272,15 @@ class CustomMarkdownViewer(MarkdownViewer):
             except Exception:
                 pass
         else:
+            # Handle file navigation
             if hasattr(self.app, "history"):
                 current = getattr(self.app, "file_path", None)
                 if current and current != Path(location):
                     self.app.history.append(current)
                     self.app.forward_stack.clear()
-            
+
             if hasattr(self.app, "file_path"):
                 self.app.file_path = Path(location)
-                
-            await super().go(location)
+
+            # Load the new file
+            await self.load(Path(location))
