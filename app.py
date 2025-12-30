@@ -193,9 +193,7 @@ class TextualMarkdownApp(App):
     def compose(self) -> ComposeResult:
         from custom_markdown import CustomMarkdownViewer
         yield Header()
-        viewer = CustomMarkdownViewer(self.markdown_content, show_table_of_contents=True)
-        viewer.focus()
-        yield viewer
+        yield CustomMarkdownViewer(self.markdown_content, show_table_of_contents=True)
         yield Input(placeholder="Search document...", id="search-input", classes="hidden")
         yield Footer()
 
@@ -205,8 +203,16 @@ class TextualMarkdownApp(App):
         self.add_class(f"style-{new_style}")
 
     def on_mount(self) -> None:
-        """Set the initial style class."""
+        """Set the initial style class and focus viewer."""
         self.add_class(f"style-{self.current_style}")
+        # Focus the viewer after mount and scroll to top
+        from custom_markdown import CustomMarkdownViewer
+        try:
+            viewer = self.query_one(CustomMarkdownViewer)
+            viewer.scroll_home(animate=False)
+            viewer.focus()
+        except Exception:
+            pass
 
     def action_switch_style(self, style_id: str) -> None:
         """Switch to a new visual style, lazy loading CSS if needed."""

@@ -7,9 +7,6 @@ import json
 from pathlib import Path
 from typing import Iterable, Callable
 
-# Import cache directory from config
-from config import CACHE_DIR
-
 from textual import work, events
 from textual.app import ComposeResult
 from textual.widgets import Markdown, Static, Label, LoadingIndicator, MarkdownViewer
@@ -55,6 +52,7 @@ class SmartMarkdownFence(MarkdownFence):
     @work(thread=True)
     def render_mermaid(self) -> None:
         try:
+            from config import CACHE_DIR
             script = self.code.strip()
             cache_key = hashlib.md5(script.encode()).hexdigest()
             cache_path = CACHE_DIR / f"mermaid_{cache_key}.png"
@@ -129,18 +127,13 @@ class CustomMarkdown(Markdown):
 
     def on_mount(self) -> None:
         """Add icons to headers on mount."""
-        # Process headers asynchronously to avoid blocking UI
-        self.add_header_icons()
-
-    @work(exclusive=True)
-    async def add_header_icons(self) -> None:
-        """Add collapse icons to all headers asynchronously."""
-        for header in self.query(MarkdownHeader):
+        # Add icons synchronously but efficiently
+        headers = self.query(MarkdownHeader)
+        for header in headers:
             if hasattr(header, "_content"):
                 header._original_text = header._content.plain
                 header._content = Content("▼ " + header._content.plain)
-                if header.is_mounted:
-                    header.update(header._content)
+                header.update(header._content)
 
     def on_click(self, event: events.Click) -> None:
         """Handle clicks on headers to toggle collapse."""
