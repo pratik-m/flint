@@ -1,15 +1,103 @@
-/* Obsidian-like Style - Adapted for Rich Markdown Rendering */
+/* Obsidian-like Style - For Plain Textual Markdown */
 
-/* Note: Rich rendering uses a single Static widget, so we can only
-   style the container. Individual element styling (headers, blockquotes)
-   is handled by Rich's renderer and cannot be customized via TCSS. */
-
-.style-obsidian CustomMarkdownViewer {
+/* Container styling */
+.style-obsidian Markdown {
     padding: 1 4;
     background: $surface;
 }
 
-.style-obsidian Static {
-    padding: 2;
-    background: transparent;
+/* Headers - Obsidian-inspired with colored accents */
+.style-obsidian MarkdownH1 {
+    color: $primary;
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 1 2;
+    background: $primary 10%;
+    border-left: wide $primary;
+    width: 100%;
+}
+
+.style-obsidian MarkdownH2 {
+    color: $secondary;
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 0 2;
+    border-left: tall $secondary;
+}
+
+.style-obsidian MarkdownH3 {
+    color: $accent;
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+.style-obsidian MarkdownH4,
+.style-obsidian MarkdownH5,
+.style-obsidian MarkdownH6 {
+    color: $text;
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+/* Blockquotes - Obsidian-style with left border */
+.style-obsidian MarkdownBlockQuote {
+    border-left: wide $accent;
+    background: $accent 8%;
+    padding: 0 2;
+    margin: 1 0;
+    color: $text 80%;
+}
+
+/* Code blocks - Subtle background */
+.style-obsidian MarkdownFence {
+    background: $panel;
+    border: tall $panel-lighten-1;
+    padding: 1 2;
+    margin: 1 0;
+}
+
+/* Inline code */
+.style-obsidian MarkdownInlineCode {
+    background: $panel;
+    color: $error;
+    text-style: bold;
+}
+
+/* Lists - Clean spacing */
+.style-obsidian MarkdownBulletList,
+.style-obsidian MarkdownOrderedList {
+    margin: 1 0;
+    padding: 0 2;
+}
+
+/* Horizontal rules - Subtle dividers */
+.style-obsidian MarkdownHorizontalRule {
+    color: $primary 30%;
+    margin: 2 0;
+}
+
+/* Links - Highlighted */
+.style-obsidian MarkdownLink {
+    color: $primary;
+    text-style: bold underline;
+}
+
+/* Tables - Clean borders */
+.style-obsidian MarkdownTable {
+    margin: 1 0;
+    border: solid $primary;
+}
+
+.style-obsidian MarkdownTH {
+    background: $primary 15%;
+    text-style: bold;
+    color: $primary;
+}
+
+.style-obsidian MarkdownTR {
+    background: $surface;
+}
+
+.style-obsidian MarkdownTR:hover {
+    background: $primary 5%;
 }

@@ -1,0 +1,116 @@
+/* Cyberpunk Style - Neon colors, bold and electric */
+
+.style-cyberpunk Markdown {
+    padding: 1 4;
+    background: $surface;
+}
+
+/* Headers - Neon glow effect with bright colors */
+.style-cyberpunk MarkdownH1 {
+    color: $success;
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 1 2;
+    background: $success 15%;
+    border: wide $success;
+    width: 100%;
+}
+
+.style-cyberpunk MarkdownH2 {
+    color: $warning;
+    text-style: bold;
+    margin: 2 0 1 0;
+    padding: 0 2;
+    border-left: wide $warning;
+    background: $warning 10%;
+}
+
+.style-cyberpunk MarkdownH3 {
+    color: $error;
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: tall $error;
+}
+
+.style-cyberpunk MarkdownH4 {
+    color: $primary;
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+.style-cyberpunk MarkdownH5,
+.style-cyberpunk MarkdownH6 {
+    color: $accent;
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+/* Blockquotes - Electric border */
+.style-cyberpunk MarkdownBlockQuote {
+    border-left: wide $success;
+    border-right: tall $success;
+    background: $success 5%;
+    padding: 0 2;
+    margin: 1 0;
+    color: $text;
+}
+
+/* Code blocks - Matrix style */
+.style-cyberpunk MarkdownFence {
+    background: $panel;
+    border: heavy $success;
+    padding: 1 2;
+    margin: 1 0;
+    color: $success;
+}
+
+/* Inline code - Highlighted */
+.style-cyberpunk MarkdownInlineCode {
+    background: $error 20%;
+    color: $error;
+    text-style: bold;
+}
+
+/* Lists - Neon bullets */
+.style-cyberpunk MarkdownBulletList,
+.style-cyberpunk MarkdownOrderedList {
+    margin: 1 0;
+    padding: 0 2;
+}
+
+/* Horizontal rules - Neon divider */
+.style-cyberpunk MarkdownHorizontalRule {
+    color: $success;
+    margin: 2 0;
+}
+
+/* Links - Bright and underlined */
+.style-cyberpunk MarkdownLink {
+    color: $warning;
+    text-style: bold underline;
+}
+
+/* Tables - Cyberpunk grid */
+.style-cyberpunk MarkdownTable {
+    margin: 1 0;
+    border: heavy $success;
+}
+
+.style-cyberpunk MarkdownTH {
+    background: $success 20%;
+    text-style: bold;
+    color: $success;
+    border-bottom: wide $success;
+}
+
+.style-cyberpunk MarkdownTR {
+    background: $surface;
+}
+
+.style-cyberpunk MarkdownTR:hover {
+    background: $warning 10%;
+}
+
+.style-cyberpunk MarkdownTD {
+    border: solid $success 30%;
+}

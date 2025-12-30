@@ -64,6 +64,7 @@ class StyleProvider(Provider):
             "Obsidian": "obsidian",
             "Minimal": "minimal",
             "Academic": "academic",
+            "Cyberpunk": "cyberpunk",
             "ASCII": "ascii",
         }
         return [
@@ -147,9 +148,10 @@ class MainCommandProvider(Provider):
 class TextualMarkdownApp(App):
     """A Textual app to view Markdown files with Vim-like motions and theme support."""
 
-    # Only load base styles - no custom styles for now (focusing on performance)
+    # Load base styles and default style
     CSS_PATH = [
         "styles.tcss",
+        "styles/obsidian.tcss",
     ]
     ENABLE_COMMAND_PALETTE = True
     COMMANDS = {MainCommandProvider}
@@ -190,7 +192,8 @@ class TextualMarkdownApp(App):
         from custom_markdown import CustomMarkdownViewer
         yield Header()
         # Create empty viewer - content will be loaded asynchronously
-        yield CustomMarkdownViewer("", show_table_of_contents=True)
+        # Sidebar hidden by default, toggle with 't' key
+        yield CustomMarkdownViewer("", show_table_of_contents=False)
         yield Input(placeholder="Search document...", id="search-input", classes="hidden")
         yield Footer()
 
@@ -200,9 +203,8 @@ class TextualMarkdownApp(App):
         self.add_class(f"style-{new_style}")
 
     def on_mount(self) -> None:
-        """Load content asynchronously."""
-        # Removed custom style class application - focusing on performance
-        # self.add_class(f"style-{self.current_style}")
+        """Load content asynchronously and apply style."""
+        self.add_class(f"style-{self.current_style}")
         # Load content asynchronously if we have a file path
         if self.file_path:
             self.load_document()

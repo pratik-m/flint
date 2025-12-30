@@ -1,3 +1,87 @@
-/* Simplified for Rich Markdown Rendering - Container styling only */
+/* Minimal Style - Clean and simple */
 
-/* Individual markdown elements (headers, lists, etc.) are styled by Rich, not TCSS */
+.style-minimal Markdown {
+    padding: 2 6;
+    background: $surface;
+}
+
+/* Headers - Simple, clean hierarchy */
+.style-minimal MarkdownH1 {
+    color: $text;
+    text-style: bold;
+    margin: 3 0 1 0;
+    border-bottom: solid $text 20%;
+    padding-bottom: 1;
+}
+
+.style-minimal MarkdownH2 {
+    color: $text;
+    text-style: bold;
+    margin: 2 0 1 0;
+    border-bottom: solid $text 10%;
+    padding-bottom: 1;
+}
+
+.style-minimal MarkdownH3 {
+    color: $text 80%;
+    text-style: bold;
+    margin: 2 0 0 0;
+}
+
+.style-minimal MarkdownH4,
+.style-minimal MarkdownH5,
+.style-minimal MarkdownH6 {
+    color: $text 70%;
+    text-style: bold;
+    margin: 1 0 0 0;
+}
+
+/* Blockquotes - Minimal border */
+.style-minimal MarkdownBlockQuote {
+    border-left: solid $text 30%;
+    padding: 0 2;
+    margin: 1 0;
+    color: $text 70%;
+    text-style: italic;
+}
+
+/* Code blocks - Minimal background */
+.style-minimal MarkdownFence {
+    background: $panel;
+    padding: 1 2;
+    margin: 1 0;
+}
+
+/* Inline code */
+.style-minimal MarkdownInlineCode {
+    background: $panel;
+    color: $text;
+}
+
+/* Lists - Minimal spacing */
+.style-minimal MarkdownBulletList,
+.style-minimal MarkdownOrderedList {
+    margin: 1 0;
+}
+
+/* Horizontal rules */
+.style-minimal MarkdownHorizontalRule {
+    color: $text 20%;
+    margin: 2 0;
+}
+
+/* Links - Subtle underline */
+.style-minimal MarkdownLink {
+    color: $text;
+    text-style: underline;
+}
+
+/* Tables */
+.style-minimal MarkdownTable {
+    margin: 1 0;
+}
+
+.style-minimal MarkdownTH {
+    text-style: bold;
+    border-bottom: solid $text 20%;
+}

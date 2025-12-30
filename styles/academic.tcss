@@ -1,3 +1,109 @@
-/* Simplified for Rich Markdown Rendering - Container styling only */
+/* Academic Style - Paper-like, professional */
 
-/* Individual markdown elements (headers, lists, etc.) are styled by Rich, not TCSS */
+.style-academic Markdown {
+    padding: 3 8;
+    background: $surface;
+}
+
+/* Headers - Academic hierarchy with numbering feel */
+.style-academic MarkdownH1 {
+    color: $text;
+    text-style: bold;
+    margin: 4 0 2 0;
+    text-align: center;
+    border-bottom: double $text 30%;
+    padding-bottom: 1;
+}
+
+.style-academic MarkdownH2 {
+    color: $text;
+    text-style: bold;
+    margin: 3 0 1 0;
+    border-bottom: solid $text 20%;
+    padding-bottom: 1;
+}
+
+.style-academic MarkdownH3 {
+    color: $text 90%;
+    text-style: bold italic;
+    margin: 2 0 1 0;
+}
+
+.style-academic MarkdownH4 {
+    color: $text 80%;
+    text-style: bold;
+    margin: 2 0 0 0;
+}
+
+.style-academic MarkdownH5,
+.style-academic MarkdownH6 {
+    color: $text 70%;
+    text-style: italic;
+    margin: 1 0 0 0;
+}
+
+/* Blockquotes - Academic citation style */
+.style-academic MarkdownBlockQuote {
+    border-left: wide $text 40%;
+    padding: 1 3;
+    margin: 2 4;
+    color: $text 80%;
+    text-style: italic;
+    background: $panel 30%;
+}
+
+/* Code blocks - Academic listing style */
+.style-academic MarkdownFence {
+    background: $panel;
+    border: solid $text 20%;
+    padding: 2 3;
+    margin: 2 0;
+}
+
+/* Inline code - Academic emphasis */
+.style-academic MarkdownInlineCode {
+    background: $panel;
+    color: $text;
+    text-style: bold;
+}
+
+/* Lists - Academic formatting with spacing */
+.style-academic MarkdownBulletList,
+.style-academic MarkdownOrderedList {
+    margin: 1 0;
+    padding: 0 3;
+}
+
+/* Horizontal rules - Section breaks */
+.style-academic MarkdownHorizontalRule {
+    color: $text 30%;
+    margin: 3 0;
+}
+
+/* Links - Academic reference style */
+.style-academic MarkdownLink {
+    color: $primary;
+    text-style: underline;
+}
+
+/* Tables - Academic data presentation */
+.style-academic MarkdownTable {
+    margin: 2 0;
+    border: solid $text 30%;
+}
+
+.style-academic MarkdownTH {
+    background: $panel 50%;
+    text-style: bold;
+    color: $text;
+    border-bottom: double $text 40%;
+    padding: 1;
+}
+
+.style-academic MarkdownTD {
+    padding: 1;
+}
+
+.style-academic MarkdownTR:even {
+    background: $panel 20%;
+}
