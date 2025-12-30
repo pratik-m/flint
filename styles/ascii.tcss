@@ -1,3 +1,120 @@
-/* Simplified for Rich Markdown Rendering - Container styling only */
+/* ASCII Art Style - Retro terminal aesthetic */
 
-/* Individual markdown elements (headers, lists, etc.) are styled by Rich, not TCSS */
+.style-ascii Markdown {
+    padding: 1 2;
+    background: $surface;
+}
+
+/* H1 - Bold green with heavy bottom border */
+.style-ascii MarkdownH1 {
+    text-style: bold;
+    color: $success;
+    margin: 2 0 1 0;
+    border-bottom: heavy $success;
+    padding-bottom: 1;
+}
+
+/* H2 - Orange with left border */
+.style-ascii MarkdownH2 {
+    color: $warning;
+    text-style: bold;
+    margin: 2 0 1 0;
+    border-left: wide $warning;
+    padding-left: 2;
+}
+
+/* H3 - Cyan with left border */
+.style-ascii MarkdownH3 {
+    color: $accent;
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: wide $accent;
+    padding-left: 2;
+}
+
+/* H4 - Blue with left border */
+.style-ascii MarkdownH4 {
+    color: $primary;
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: wide $primary;
+    padding-left: 2;
+}
+
+/* H5 - Purple with left border */
+.style-ascii MarkdownH5 {
+    color: $secondary;
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: wide $secondary;
+    padding-left: 2;
+}
+
+/* H6 - Muted with left border */
+.style-ascii MarkdownH6 {
+    color: $text-muted;
+    text-style: bold;
+    margin: 1 0 0 0;
+    border-left: wide $text-muted;
+    padding-left: 2;
+}
+
+/* Code fences */
+.style-ascii MarkdownFence {
+    background: $panel;
+    border: solid $panel-lighten-1;
+    padding: 1 2;
+    margin: 1 0;
+    color: $success;
+}
+
+/* Regular text */
+.style-ascii MarkdownParagraph {
+    margin: 1 0;
+    color: $text;
+}
+
+/* Blockquotes - ASCII box style */
+.style-ascii MarkdownBlockQuote {
+    border-left: wide $panel;
+    padding: 0 2;
+    margin: 1 0;
+    color: $text-muted;
+}
+
+/* Inline code - Retro style */
+.style-ascii MarkdownInlineCode {
+    background: $panel;
+    color: $warning;
+    text-style: bold;
+}
+
+/* Lists - Simple */
+.style-ascii MarkdownBulletList,
+.style-ascii MarkdownOrderedList {
+    margin: 1 0;
+}
+
+/* Horizontal rules - ASCII line */
+.style-ascii MarkdownHorizontalRule {
+    color: $panel;
+    margin: 2 0;
+}
+
+/* Links - Terminal style */
+.style-ascii MarkdownLink {
+    color: $primary;
+    text-style: underline;
+}
+
+/* Tables - ASCII grid */
+.style-ascii MarkdownTable {
+    margin: 1 0;
+    border: solid $panel;
+}
+
+.style-ascii MarkdownTH {
+    text-style: bold;
+    color: $success;
+    border-bottom: solid $panel;
+}

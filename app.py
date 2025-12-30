@@ -216,13 +216,11 @@ class TextualMarkdownApp(App):
 
         try:
             viewer = self.query_one(CustomMarkdownViewer)
-            markdown = viewer.document
 
-            # Load content asynchronously - this is the key!
-            await markdown.load(self.file_path)
+            # Load content asynchronously
+            await viewer.load(self.file_path)
 
-            # Post-load: scroll to top and focus (like Frogmouth)
-            viewer.scroll_home(animate=False)
+            # Focus the viewer
             viewer.focus()
 
         except Exception as e:
