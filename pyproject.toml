@@ -16,7 +16,3 @@ dependencies = [
 
 [project.scripts]
 mdview = "app:main"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
