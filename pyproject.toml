@@ -9,6 +9,11 @@ authors = [
     { name = "Pratik Munot <munotpratik2009@gmail.com>" }
 ]
 keywords = ["markdown", "tui", "textual", "viewer", "mermaid", "obsidian", "flint"]
+
+[project.urls]
+Homepage = "https://github.com/pratik-m/flint"
+Repository = "https://github.com/pratik-m/flint"
+Issues = "https://github.com/pratik-m/flint/issues"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

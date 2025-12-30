@@ -25,6 +25,10 @@ pipx install flint-markdown-viewer
 
 ### Using `uv` (Fastest)
 ```bash
+# One-time run
+uvx --from flint-markdown-viewer flint your-file.md
+
+# Or install globally
 uv tool install flint-markdown-viewer
 ```
 
