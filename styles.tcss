@@ -69,3 +69,19 @@ MarkdownViewer:focus {
     height: auto;
     margin: 1 0;
 }
+
+/* Image block container */
+#image-block {
+    width: 100%;
+    height: auto;
+    margin: 1 0;
+}
+
+/* Loading indicator for images */
+#loading-image {
+    width: 100%;
+    height: auto;
+    min-height: 3;
+    padding: 1;
+    color: $accent;
+}

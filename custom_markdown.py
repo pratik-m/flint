@@ -23,17 +23,182 @@ from textual.widgets._markdown import (
 from textual.content import Content
 from markdown_it.token import Token
 
+# IMPORTANT: Import textual_image BEFORE app starts (per textual-image docs)
+from textual_image.widget import TGPImage
+
 # Pre-compiled regex for header cleanup
 _HEADER_CLEANUP_RE = re.compile(r"^[▼▶]\s*|\s*[#=\-]+$|^\n+")
 
+class SmartImageFence(MarkdownFence):
+    """A Markdown fence that renders images asynchronously."""
+
+    def compose(self) -> ComposeResult:
+        # For ~~~image blocks
+        with Vertical(classes="code-block-container", id="image-block"):
+            yield Label("image", classes="code-language")
+            yield LoadingIndicator(id="loading-image")
+        try:
+            self.render_image()
+        except Exception:
+            pass
+
+    @work(thread=True)
+    def render_image(self) -> None:
+        """Render images from local files or remote URLs."""
+        try:
+            from config import CACHE_DIR
+            from PIL import Image as PILImage
+            from pathlib import Path
+            import io
+
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+            # Parse: first line is URL/path, rest is alt text
+            lines = self.code.strip().split('\n')
+            url_or_path = lines[0].strip()
+
+            # Check if it's a local file path
+            is_local = not url_or_path.startswith(('http://', 'https://'))
+
+            if is_local:
+                # Handle local file
+                local_path = Path(url_or_path)
+
+                # Make path absolute if relative (relative to markdown file location)
+                if not local_path.is_absolute() and hasattr(self.app, 'file_path'):
+                    local_path = self.app.file_path.parent / local_path
+
+                if local_path.exists():
+                    self.app.log(f"→ Local image: {local_path.name}")
+
+                    # Check if local image needs resizing
+                    img = PILImage.open(local_path)
+                    MAX_WIDTH = 1200
+
+                    if img.width > MAX_WIDTH:
+                        # Create cached resized version
+                        cache_key = hashlib.md5(str(local_path).encode()).hexdigest()
+                        cache_path = CACHE_DIR / f"local_{cache_key}.png"
+
+                        if not cache_path.exists():
+                            ratio = MAX_WIDTH / img.width
+                            new_height = int(img.height * ratio)
+                            resized = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                            resized.save(cache_path, "PNG", optimize=True)
+                            self.app.log(f"  Resized local image to {MAX_WIDTH}x{new_height}")
+
+                        self.app.call_from_thread(self.display_image, str(cache_path))
+                    else:
+                        # Use original if small enough
+                        self.app.call_from_thread(self.display_image, str(local_path))
+                else:
+                    self.app.log(f"✗ Local image not found: {local_path}")
+                    self.app.call_from_thread(self.show_image_error, f"File not found: {local_path.name}")
+            else:
+                # Handle remote URL
+                import requests
+
+                # Generate cache key for remote images
+                cache_key = hashlib.md5(url_or_path.encode()).hexdigest()
+                cache_path = CACHE_DIR / f"image_{cache_key}.png"
+
+                # Check cache
+                if cache_path.exists():
+                    self.app.log(f"→ Image cache HIT: {url_or_path[:50]}")
+                    self.app.call_from_thread(self.display_image, str(cache_path))
+                    return
+
+                self.app.log(f"→ Image cache MISS, downloading: {url_or_path[:50]}")
+
+                # Download image
+                if not self.app.is_running:
+                    return
+                response = requests.get(url_or_path, timeout=15)
+                if not self.app.is_running:
+                    return
+
+                if response.status_code == 200:
+                    # Load image and resize for terminal display
+                    img = PILImage.open(io.BytesIO(response.content))
+
+                    # Resize to terminal-optimal width (match Mermaid diagrams)
+                    MAX_WIDTH = 800
+                    if img.width > MAX_WIDTH:
+                        ratio = MAX_WIDTH / img.width
+                        new_height = int(img.height * ratio)
+                        img = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                        self.app.log(f"  Resized to {MAX_WIDTH}x{new_height} for terminal")
+
+                    # Save resized image to cache
+                    img.save(cache_path, "PNG", optimize=True)
+                    self.app.log(f"  Cached to: {cache_path.name}")
+                    self.app.call_from_thread(self.display_image, str(cache_path))
+                else:
+                    self.app.call_from_thread(self.show_image_error, f"HTTP {response.status_code}")
+
+        except Exception as e:
+            if self.app.is_running:
+                self.app.log(f"✗ Image error: {e}")
+                self.app.call_from_thread(self.show_image_error, str(e))
+
+    def display_image(self, image_path: str) -> None:
+        try:
+            # Remove loading indicator
+            try:
+                self.query_one("#loading-image").remove()
+            except:
+                pass
+
+            # Create image widget using TGP rendering with unique ID
+            import os
+            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            img = TGPImage(str(image_path), id=img_id)
+            img.styles.width = "auto"
+            img.styles.height = "auto"
+            img.styles.margin = (0, 0, 2, 0)
+
+            # Mount into container
+            container = self.query_one("#image-block", Vertical)
+            container.mount(img)
+
+            # Force refresh for instant display
+            container.refresh(layout=True)
+            self.refresh(layout=True)
+
+            self.app.log(f"✓ Image displayed (TGP)")
+
+        except Exception as e:
+            self.app.log(f"✗ Error displaying image: {e}")
+            self.show_image_error(str(e))
+
+    def show_image_error(self, error_msg: str) -> None:
+        try:
+            try:
+                self.query_one("#loading-image").remove()
+            except:
+                pass
+            self.mount(Static(f"[red]Image load failed: {error_msg}[/red]", classes="error"))
+        except:
+            pass
+
+
 class SmartMarkdownFence(MarkdownFence):
-    """A Markdown fence that can render Mermaid diagrams asynchronously."""
+    """A Markdown fence that can render Mermaid diagrams and images asynchronously."""
 
     def compose(self) -> ComposeResult:
         lexer = self.lexer.strip().lower() if self.lexer else ""
 
-        # Optimization: Avoid extra container if not mermaid
-        if lexer == "mermaid":
+        if lexer == "image":
+            # Handle images
+            with Vertical(classes="code-block-container", id="image-block"):
+                yield Label("image", classes="code-language")
+                yield LoadingIndicator(id="loading-image")
+            try:
+                self.render_image()
+            except Exception:
+                pass
+        elif lexer == "mermaid":
+            # Handle mermaid diagrams
             with Vertical(classes="code-block-container", id="mermaid-block"):
                 yield Label(lexer, classes="code-language")
                 yield LoadingIndicator(id="loading-mermaid")
@@ -50,6 +215,147 @@ class SmartMarkdownFence(MarkdownFence):
         else:
             # For plain code blocks, just yield the content (fastest)
             yield Label(self._highlighted_code, id="code-content")
+
+    @work(thread=True)
+    def render_image(self) -> None:
+        """Render images from local files or remote URLs."""
+        try:
+            from config import CACHE_DIR
+            from PIL import Image as PILImage
+            from pathlib import Path
+            import io
+
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+            # Parse: first line is URL/path, rest is alt text
+            lines = self.code.strip().split('\n')
+            url_or_path = lines[0].strip()
+
+            # Check if it's a local file path
+            is_local = not url_or_path.startswith(('http://', 'https://'))
+
+            if is_local:
+                # Handle local file
+                local_path = Path(url_or_path)
+
+                # Make path absolute if relative (relative to markdown file location)
+                if not local_path.is_absolute() and hasattr(self.app, 'file_path'):
+                    local_path = self.app.file_path.parent / local_path
+
+                if local_path.exists():
+                    self.app.log(f"→ Local image: {local_path.name}")
+
+                    # Check if local image needs resizing
+                    img = PILImage.open(local_path)
+                    MAX_WIDTH = 1200
+
+                    if img.width > MAX_WIDTH:
+                        # Create cached resized version
+                        cache_key = hashlib.md5(str(local_path).encode()).hexdigest()
+                        cache_path = CACHE_DIR / f"local_{cache_key}.png"
+
+                        if not cache_path.exists():
+                            ratio = MAX_WIDTH / img.width
+                            new_height = int(img.height * ratio)
+                            resized = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                            resized.save(cache_path, "PNG", optimize=True)
+                            self.app.log(f"  Resized local image to {MAX_WIDTH}x{new_height}")
+
+                        self.app.call_from_thread(self.display_image, str(cache_path))
+                    else:
+                        # Use original if small enough
+                        self.app.call_from_thread(self.display_image, str(local_path))
+                else:
+                    self.app.log(f"✗ Local image not found: {local_path}")
+                    self.app.call_from_thread(self.show_image_error, f"File not found: {local_path.name}")
+            else:
+                # Handle remote URL
+                import requests
+
+                # Generate cache key for remote images
+                cache_key = hashlib.md5(url_or_path.encode()).hexdigest()
+                cache_path = CACHE_DIR / f"image_{cache_key}.png"
+
+                # Check cache
+                if cache_path.exists():
+                    self.app.log(f"→ Image cache HIT: {url_or_path[:50]}")
+                    self.app.call_from_thread(self.display_image, str(cache_path))
+                    return
+
+                self.app.log(f"→ Image cache MISS, downloading: {url_or_path[:50]}")
+
+                # Download image
+                if not self.app.is_running:
+                    return
+                response = requests.get(url_or_path, timeout=15)
+                if not self.app.is_running:
+                    return
+
+                if response.status_code == 200:
+                    # Load image and resize for terminal display
+                    img = PILImage.open(io.BytesIO(response.content))
+
+                    # Resize to terminal-optimal width (match Mermaid diagrams)
+                    MAX_WIDTH = 800
+                    if img.width > MAX_WIDTH:
+                        ratio = MAX_WIDTH / img.width
+                        new_height = int(img.height * ratio)
+                        img = img.resize((MAX_WIDTH, new_height), PILImage.Resampling.LANCZOS)
+                        self.app.log(f"  Resized to {MAX_WIDTH}x{new_height} for terminal")
+
+                    # Save resized image to cache
+                    img.save(cache_path, "PNG", optimize=True)
+                    self.app.log(f"  Cached to: {cache_path.name}")
+                    self.app.call_from_thread(self.display_image, str(cache_path))
+                else:
+                    self.app.call_from_thread(self.show_image_error, f"HTTP {response.status_code}")
+
+        except Exception as e:
+            if self.app.is_running:
+                self.app.log(f"✗ Image error: {e}")
+                self.app.call_from_thread(self.show_image_error, str(e))
+
+    def display_image(self, image_path: str) -> None:
+        """Display loaded image."""
+        try:
+            from textual_image.widget import Image as ImageWidget
+
+            # Remove loading indicator
+            try:
+                self.query_one("#loading-image").remove()
+            except:
+                pass
+
+            # Create image widget
+            img = ImageWidget(str(image_path))
+            img.styles.width = "auto"
+            img.styles.height = "auto"
+            img.styles.margin = (0, 0, 2, 0)
+
+            # Mount into container
+            container = self.query_one("#image-block", Vertical)
+            container.mount(img)
+
+            # Force refresh
+            container.refresh(layout=True)
+            self.refresh(layout=True)
+
+            self.app.log(f"✓ Image displayed")
+
+        except Exception as e:
+            self.app.log(f"✗ Error displaying image: {e}")
+            self.show_image_error(str(e))
+
+    def show_image_error(self, error_msg: str) -> None:
+        """Show image load error."""
+        try:
+            try:
+                self.query_one("#loading-image").remove()
+            except:
+                pass
+            self.mount(Static(f"[red]Image load failed: {error_msg}[/red]", classes="error"))
+        except:
+            pass
 
     @work(thread=True)
     def render_mermaid(self) -> None:
@@ -125,7 +431,6 @@ class SmartMarkdownFence(MarkdownFence):
 
     def update_mermaid(self, image_path: str, from_cache: bool = False) -> None:
         try:
-            from textual_image.widget import Image as ImageWidget
             from PIL import Image as PILImage
 
             # Get actual image dimensions
@@ -137,11 +442,12 @@ class SmartMarkdownFence(MarkdownFence):
 
             self.app.log(f"  Image: {img_width}x{img_height}px")
 
-            # Create image widget WITHOUT max_height to see if that improves quality
-            img = ImageWidget(str(image_path))
+            # Create image widget using TGP rendering with unique ID
+            import os
+            img_id = f"img-{os.path.basename(image_path)[:16]}"
+            img = TGPImage(str(image_path), id=img_id)
             img.styles.width = "auto"
             img.styles.height = "auto"
-            # NO max_height - let it render at full quality
             img.styles.margin = (0, 0, 2, 0)
 
             # Remove loading indicator and code-content
@@ -157,6 +463,10 @@ class SmartMarkdownFence(MarkdownFence):
             # Mount into container
             container = self.query_one("#mermaid-block", Vertical)
             container.mount(img)
+
+            # Force refresh for instant display
+            container.refresh(layout=True)
+            self.refresh(layout=True)
 
             self.app.log(f"✓ Mermaid displayed {img_width}x{img_height}px")
 
@@ -206,11 +516,38 @@ class CustomMarkdown(Markdown):
         parser_factory: Callable[[], any] | None = None,
         open_links: bool = True,
     ):
+        # Pre-process markdown to convert images to fence blocks
+        if markdown:
+            markdown = self._preprocess_images(markdown)
+
         super().__init__(markdown, name=name, id=id, classes=classes, parser_factory=parser_factory, open_links=open_links)
         self.BLOCKS = self.BLOCKS.copy()
         self.BLOCKS["fence"] = SmartMarkdownFence
         self._collapsed_headers: set[int] = set()
         self.current_style = "obsidian"
+
+    @staticmethod
+    def _preprocess_images(markdown: str) -> str:
+        """Convert ![alt](url) to ~~~image fence blocks."""
+        import re
+        pattern = r'!\[([^\]]*)\]\(([^\)]+)\)'
+
+        def replace_image(match):
+            alt = match.group(1)
+            url = match.group(2)
+            return f"~~~image\n{url}\n{alt}\n~~~"
+
+        return re.sub(pattern, replace_image, markdown)
+
+    async def load(self, path: Path) -> None:
+        """Override load to preprocess images."""
+        import asyncio
+        # Read file in thread to avoid blocking
+        content = await asyncio.to_thread(path.read_text, encoding="utf-8")
+        # Preprocess images before passing to parent load
+        content = self._preprocess_images(content)
+        # Update document with preprocessed content
+        await self.update(content)
 
     def on_mount(self) -> None:
         """Add icons to headers on mount."""
