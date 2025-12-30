@@ -7,15 +7,16 @@ import json
 from pathlib import Path
 from typing import Iterable, Callable
 
+from rich.markdown import Markdown as RichMarkdown
 from textual import work, events
 from textual.app import ComposeResult
 from textual.widgets import Markdown, Static, Label, LoadingIndicator, MarkdownViewer
-from textual.containers import Vertical
+from textual.containers import Vertical, VerticalScroll
 from textual.widgets._markdown import (
-    MarkdownBlock, 
-    MarkdownFence, 
-    MarkdownHeader, 
-    MarkdownTableOfContents, 
+    MarkdownBlock,
+    MarkdownFence,
+    MarkdownHeader,
+    MarkdownTableOfContents,
     slug_for_tcss_id
 )
 from textual.content import Content
@@ -90,13 +91,15 @@ class SmartMarkdownFence(MarkdownFence):
             img = ImageWidget(image_path)
             img.styles.width = "auto"
             img.styles.height = "auto"
-            img.styles.max_height = 100
+            # Remove max_height constraint for better quality
+            # img.styles.max_height = 100
             img.styles.margin = (1, 0)
+            # Enable upscaling for better quality
             if hasattr(img, "upscale"):
                 img.upscale = True
             self.mount(img)
-        except Exception:
-            pass
+        except Exception as e:
+            self.app.log(f"Error mounting mermaid image: {e}")
 
     def show_error(self, error_msg: str) -> None:
         try:
@@ -127,13 +130,9 @@ class CustomMarkdown(Markdown):
 
     def on_mount(self) -> None:
         """Add icons to headers on mount."""
-        # Add icons synchronously but efficiently
-        headers = self.query(MarkdownHeader)
-        for header in headers:
-            if hasattr(header, "_content"):
-                header._original_text = header._content.plain
-                header._content = Content("▼ " + header._content.plain)
-                header.update(header._content)
+        # Skip header processing for faster load
+        # TODO: Make this optional or lazy-load
+        pass
 
     def on_click(self, event: events.Click) -> None:
         """Handle clicks on headers to toggle collapse."""
@@ -208,16 +207,53 @@ class CustomMarkdown(Markdown):
                 required_levels = [l for l in required_levels if l < item.LEVEL]
             current_idx -= 1
 
-class CustomMarkdownViewer(MarkdownViewer):
-    """A Markdown viewer that uses CustomMarkdown."""
+class FastMarkdownContent(VerticalScroll, can_focus=True):
+    """Fast markdown content using Rich rendering (single widget)."""
 
     def compose(self) -> ComposeResult:
-        markdown = CustomMarkdown(
-            parser_factory=self._parser_factory, open_links=False
-        )
-        markdown.can_focus = True
-        yield markdown
-        yield MarkdownTableOfContents(markdown)
+        """Compose with a single Static widget for fast rendering."""
+        yield Static("# Loading...\n\nPlease wait.", id="md-content")
+
+    async def load(self, path: Path) -> None:
+        """Load markdown from a file."""
+        content = path.read_text(encoding="utf-8")
+        static = self.query_one("#md-content", Static)
+        static.update(RichMarkdown(content))
+
+
+class CustomMarkdownViewer(VerticalScroll, can_focus=True):
+    """A fast Markdown viewer using Rich rendering instead of widget-heavy approach."""
+
+    DEFAULT_CSS = """
+    CustomMarkdownViewer {
+        width: 1fr;
+        height: 1fr;
+    }
+    """
+
+    def __init__(self, markdown: str = "", **kwargs):
+        # Extract show_table_of_contents from kwargs
+        self.show_table_of_contents = kwargs.pop("show_table_of_contents", False)
+        super().__init__(**kwargs)
+        self._markdown = markdown
+
+    def compose(self) -> ComposeResult:
+        """Compose with Rich markdown rendering."""
+        if self._markdown:
+            yield Static(RichMarkdown(self._markdown))
+        else:
+            yield Static("# Loading...\n\nPlease wait.")
+
+    @property
+    def document(self):
+        """Return self for compatibility with existing code."""
+        return self
+
+    async def load(self, path: Path) -> None:
+        """Load markdown from a file."""
+        content = path.read_text(encoding="utf-8")
+        static = self.query_one(Static)
+        static.update(RichMarkdown(content))
 
     async def go(self, location: str | Path) -> None:
         href = str(location)

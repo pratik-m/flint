@@ -1,46 +1,15 @@
-/* Obsidian-like Style */
+/* Obsidian-like Style - Adapted for Rich Markdown Rendering */
 
-.style-obsidian Markdown {
+/* Note: Rich rendering uses a single Static widget, so we can only
+   style the container. Individual element styling (headers, blockquotes)
+   is handled by Rich's renderer and cannot be customized via TCSS. */
+
+.style-obsidian CustomMarkdownViewer {
     padding: 1 4;
+    background: $surface;
 }
 
-.style-obsidian MarkdownH1 {
-    border-bottom: wide $primary;
-    color: $primary;
-    text-style: bold;
-    margin: 4 0 2 0;
-    padding: 2 4;
-    background: $primary 15%;
-    width: 100%;
-}
-
-.style-obsidian MarkdownH2 {
-    border-left: wide $error;
-    color: $secondary;
-    text-style: bold;
-    margin: 3 0 1 0;
-    padding: 1 4;
-    background: $secondary 10%;
-}
-
-.style-obsidian MarkdownH3 {
-    color: $accent;
-    text-style: bold;
-    margin: 1 0 0 0;
-    border-bottom: solid $accent;
-    width: auto;
-}
-
-.style-obsidian MarkdownBlockQuote {
-    border-left: solid $accent;
-    background: $accent 10%;
-    padding: 0 2;
-    margin: 1 0;
-    color: $text;
-}
-
-.style-obsidian MarkdownFence {
-    background: $panel;
-    border: tall $panel;
-    margin: 1 0;
+.style-obsidian Static {
+    padding: 2;
+    background: transparent;
 }

@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
+from textual import work
 from textual.app import App, ComposeResult, Widget
 from textual.binding import Binding
 from textual.widgets import Footer, Header, Input
@@ -179,10 +180,6 @@ class TextualMarkdownApp(App):
     def __init__(self, file_path: Path | None = None):
         super().__init__()
         self.file_path = file_path
-        self.markdown_content = ""
-        if self.file_path and self.file_path.exists():
-            self.markdown_content = self.file_path.read_text(encoding="utf-8")
-
         self.search_results: list[Widget] = []
         self.current_search_index: int = -1
         self.search_query: str = ""
@@ -193,7 +190,8 @@ class TextualMarkdownApp(App):
     def compose(self) -> ComposeResult:
         from custom_markdown import CustomMarkdownViewer
         yield Header()
-        yield CustomMarkdownViewer(self.markdown_content, show_table_of_contents=True)
+        # Create empty viewer - content will be loaded asynchronously
+        yield CustomMarkdownViewer("", show_table_of_contents=True)
         yield Input(placeholder="Search document...", id="search-input", classes="hidden")
         yield Footer()
 
@@ -203,16 +201,30 @@ class TextualMarkdownApp(App):
         self.add_class(f"style-{new_style}")
 
     def on_mount(self) -> None:
-        """Set the initial style class and focus viewer."""
+        """Set the initial style class and load content."""
         self.add_class(f"style-{self.current_style}")
-        # Focus the viewer after mount and scroll to top
+        # Load content asynchronously if we have a file path
+        if self.file_path:
+            self.load_document()
+
+    @work(exclusive=True)
+    async def load_document(self) -> None:
+        """Load the markdown document asynchronously (Frogmouth pattern)."""
         from custom_markdown import CustomMarkdownViewer
+
         try:
             viewer = self.query_one(CustomMarkdownViewer)
+            markdown = viewer.document
+
+            # Load content asynchronously - this is the key!
+            await markdown.load(self.file_path)
+
+            # Post-load: scroll to top and focus (like Frogmouth)
             viewer.scroll_home(animate=False)
             viewer.focus()
-        except Exception:
-            pass
+
+        except Exception as e:
+            self.notify(f"Error loading document: {e}", severity="error")
 
     def action_switch_style(self, style_id: str) -> None:
         """Switch to a new visual style, lazy loading CSS if needed."""
@@ -478,11 +490,13 @@ class TextualMarkdownApp(App):
             await self.reload_content()
 
     async def reload_content(self) -> None:
+        """Reload content using async pattern."""
         if self.file_path and self.file_path.exists():
-            self.markdown_content = self.file_path.read_text(encoding="utf-8")
             from custom_markdown import CustomMarkdownViewer
             viewer = self.query_one(CustomMarkdownViewer)
-            await viewer.go(self.file_path)
+            # Use async load pattern
+            await viewer.document.load(self.file_path)
+            viewer.scroll_home(animate=False)
 
 def main():
     """Main entry point for the application."""

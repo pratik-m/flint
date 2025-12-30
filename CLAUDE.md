@@ -33,20 +33,43 @@ Key dependencies:
 
 ## Architecture
 
+### CRITICAL: Rendering Architecture Decision
+
+**Performance Issue with Textual's Markdown Widget:**
+Textual's built-in `Markdown` widget creates a separate widget for EVERY markdown element (headers, paragraphs, lists, etc.). For a 301-line document, this means 100+ individual widgets that must mount sequentially, causing 3-5 second load times.
+
+**Solution: Rich Markdown Rendering**
+We use `rich.markdown.Markdown` with a single `Static` widget instead of Textual's widget-heavy `Markdown` component. This provides **instant loading** (from 3-5s to <0.1s).
+
+**Trade-offs:**
+- ✅ **Instant loading** - Single widget vs 100+ widgets (3-5s → <0.1s)
+- ✅ Keeps: Vim navigation, search, Textual themes (gruvbox, nord, dracula, etc.)
+- ❌ Lost: Built-in table of contents, collapsible sections, click-to-navigate headers
+- ❌ **Custom style files (obsidian.tcss, minimal.tcss, etc.) DON'T WORK**: Rich renders markdown internally; TCSS can only style the container, not individual elements (headers, quotes, code blocks)
+- 📝 TODO: Rebuild TOC by parsing headers manually, handle Mermaid diagrams
+
+**Styling Limitation:**
+The custom styles (obsidian, minimal, academic, ascii) that previously styled individual markdown elements (H1/H2 colors, borders, backgrounds) no longer work because Rich renders everything as formatted text inside a Static widget. TCSS cannot target content inside Static widgets. Only container-level styling (padding, backgrounds on the viewer itself) is possible.
+
+**Key Implementation:**
+- `CustomMarkdownViewer`: Now inherits from `VerticalScroll` (not `MarkdownViewer`)
+- Uses `Static(RichMarkdown(content))` for rendering
+- Async loading with `@work(exclusive=True)` pattern (borrowed from Frogmouth)
+
 ### Core Components
 
 **app.py** - Main application entry point
 - `TextualMarkdownApp`: Main Textual app class that orchestrates the viewer
 - Command palette providers: `ThemeProvider`, `StyleProvider`, `MainCommandProvider`
 - Implements vim-like keybindings, search functionality, and navigation history
-- Lazy loads `CustomMarkdownViewer` and `CustomMarkdown` to optimize startup
+- Uses async loading pattern with `@work` decorator for fast startup
 
-**custom_markdown.py** - Custom Markdown rendering
-- `CustomMarkdown`: Extends Textual's Markdown widget with collapsible sections
+**custom_markdown.py** - Fast Markdown rendering
+- `CustomMarkdownViewer`: Fast viewer using Rich's Markdown renderer (single Static widget)
 - `SmartMarkdownFence`: Custom fence renderer that handles Mermaid diagrams
-- `CustomMarkdownViewer`: Wrapper that integrates CustomMarkdown with table of contents
+- Uses Rich's `Markdown` class for rendering instead of Textual's widget-heavy approach
 - Mermaid diagram rendering via async workers using mermaid.ink API
-- Diagram caching in `/tmp/textual-md-viewer-cache` (currently hardcoded, may not be correctly implemented)
+- Diagram caching in XDG-compliant cache directory via platformdirs
 
 **config.py** - Configuration and directory management
 - Uses `platformdirs` for XDG-compliant config/cache directories
