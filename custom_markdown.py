@@ -221,39 +221,22 @@ class FastMarkdownContent(VerticalScroll, can_focus=True):
         static.update(RichMarkdown(content))
 
 
-class CustomMarkdownViewer(VerticalScroll, can_focus=True):
-    """A fast Markdown viewer using Rich rendering instead of widget-heavy approach."""
-
-    DEFAULT_CSS = """
-    CustomMarkdownViewer {
-        width: 1fr;
-        height: 1fr;
-    }
-    """
+class CustomMarkdownViewer(MarkdownViewer):
+    """Markdown viewer using plain Textual Markdown - fast and simple."""
 
     def __init__(self, markdown: str = "", **kwargs):
-        # Extract show_table_of_contents from kwargs
-        self.show_table_of_contents = kwargs.pop("show_table_of_contents", False)
-        super().__init__(**kwargs)
-        self._markdown = markdown
-
-    def compose(self) -> ComposeResult:
-        """Compose with Rich markdown rendering."""
-        if self._markdown:
-            yield Static(RichMarkdown(self._markdown))
-        else:
-            yield Static("# Loading...\n\nPlease wait.")
+        # Let MarkdownViewer handle everything
+        super().__init__(markdown, **kwargs)
 
     @property
-    def document(self):
-        """Return self for compatibility with existing code."""
-        return self
+    def document(self) -> Markdown:
+        """Get the markdown document widget."""
+        return self.query_one(Markdown)
 
     async def load(self, path: Path) -> None:
-        """Load markdown from a file."""
-        content = path.read_text(encoding="utf-8")
-        static = self.query_one(Static)
-        static.update(RichMarkdown(content))
+        """Load markdown from a file using Textual's async load."""
+        await self.document.load(path)
+        self.scroll_home(animate=False)
 
     async def go(self, location: str | Path) -> None:
         href = str(location)

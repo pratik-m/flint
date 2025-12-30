@@ -147,10 +147,9 @@ class MainCommandProvider(Provider):
 class TextualMarkdownApp(App):
     """A Textual app to view Markdown files with Vim-like motions and theme support."""
 
-    # Only load base styles and default style at startup
+    # Only load base styles - no custom styles for now (focusing on performance)
     CSS_PATH = [
         "styles.tcss",
-        "styles/obsidian.tcss",
     ]
     ENABLE_COMMAND_PALETTE = True
     COMMANDS = {MainCommandProvider}
@@ -201,8 +200,9 @@ class TextualMarkdownApp(App):
         self.add_class(f"style-{new_style}")
 
     def on_mount(self) -> None:
-        """Set the initial style class and load content."""
-        self.add_class(f"style-{self.current_style}")
+        """Load content asynchronously."""
+        # Removed custom style class application - focusing on performance
+        # self.add_class(f"style-{self.current_style}")
         # Load content asynchronously if we have a file path
         if self.file_path:
             self.load_document()
